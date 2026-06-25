@@ -9,14 +9,14 @@ const planetData = [
     colors: ["#f3c9d8", "#a9e8ff", "#fff0a8"],
     orbitRadius: 220,
     size: 34,
-    spinDuration: 22,
+    spinDuration: 8,
     spinDirection: 1,
     axialTilt: -12,
-    speed: 0.000085,
+    speed: 0.0002,
     angle: 0.2,
     ring: {
-      width: 3.45,
-      height: 0.78,
+      width: 4.9,
+      height: 1.18,
       tilt: -15,
       colors: ["rgba(255, 236, 190, 0.58)", "rgba(130, 214, 255, 0.38)"],
     },
@@ -31,16 +31,16 @@ const planetData = [
     colors: ["#b68a69", "#695346", "#d8c0a0"],
     orbitRadius: 285,
     size: 44,
-    spinDuration: 36,
+    spinDuration: 13,
     spinDirection: 1,
     axialTilt: 8,
-    speed: 0.000052,
+    speed: 0.000115,
     angle: 1.18,
     moons: [
       {
-        orbit: 50,
-        size: 8,
-        duration: 17,
+        orbit: 66,
+        size: 11,
+        duration: 10,
         angle: 35,
         color: "#d8c0a0",
         direction: 1,
@@ -57,30 +57,30 @@ const planetData = [
     colors: ["#7fdcc9", "#4b6570", "#d8ffff"],
     orbitRadius: 440,
     size: 40,
-    spinDuration: 28,
+    spinDuration: 10,
     spinDirection: -1,
     axialTilt: -24,
-    speed: 0.000025,
+    speed: 0.000045,
     angle: 2.08,
     ring: {
-      width: 3.1,
-      height: 0.68,
+      width: 4.65,
+      height: 1.08,
       tilt: 18,
       colors: ["rgba(125, 246, 255, 0.48)", "rgba(180, 200, 215, 0.26)"],
     },
     moons: [
       {
-        orbit: 46,
-        size: 7,
-        duration: 21,
+        orbit: 62,
+        size: 10,
+        duration: 13,
         angle: 15,
         color: "#c6f8ff",
         direction: -1,
       },
       {
-        orbit: 62,
-        size: 5,
-        duration: 33,
+        orbit: 82,
+        size: 8,
+        duration: 21,
         angle: 156,
         color: "#92a6ad",
         direction: 1,
@@ -97,16 +97,16 @@ const planetData = [
     colors: ["#7df6ff", "#8b8cff", "#e9faff"],
     orbitRadius: 360,
     size: 38,
-    spinDuration: 24,
+    spinDuration: 9,
     spinDirection: 1,
     axialTilt: 14,
-    speed: 0.000038,
+    speed: 0.000072,
     angle: 3.05,
     moons: [
       {
-        orbit: 48,
-        size: 7,
-        duration: 19,
+        orbit: 64,
+        size: 10,
+        duration: 12,
         angle: 260,
         color: "#dffcff",
         direction: 1,
@@ -123,14 +123,14 @@ const planetData = [
     colors: ["#d8c27a", "#b88648", "#f4e2a6"],
     orbitRadius: 485,
     size: 33,
-    spinDuration: 42,
+    spinDuration: 16,
     spinDirection: 1,
     axialTilt: -7,
-    speed: 0.000016,
+    speed: 0.000026,
     angle: 4.2,
     ring: {
-      width: 3.15,
-      height: 0.7,
+      width: 4.55,
+      height: 1.08,
       tilt: -26,
       colors: ["rgba(244, 226, 166, 0.52)", "rgba(184, 134, 72, 0.32)"],
     },
@@ -145,16 +145,16 @@ const planetData = [
     colors: ["#c77d86", "#432c3e", "#ffb2a8"],
     orbitRadius: 525,
     size: 42,
-    spinDuration: 30,
+    spinDuration: 11,
     spinDirection: -1,
     axialTilt: 22,
-    speed: 0.000011,
+    speed: 0.000017,
     angle: 4.86,
     moons: [
       {
-        orbit: 54,
-        size: 8,
-        duration: 25,
+        orbit: 72,
+        size: 11,
+        duration: 15,
         angle: 310,
         color: "#7d6470",
         direction: -1,
@@ -171,14 +171,14 @@ const planetData = [
     colors: ["#bdf7d0", "#9ed4ff", "#ffffff"],
     orbitRadius: 560,
     size: 32,
-    spinDuration: 48,
+    spinDuration: 20,
     spinDirection: 1,
     axialTilt: 4,
-    speed: 0.000008,
+    speed: 0.000012,
     angle: 4.95,
     ring: {
-      width: 3.25,
-      height: 0.72,
+      width: 4.35,
+      height: 1.02,
       tilt: 12,
       colors: ["rgba(220, 255, 238, 0.52)", "rgba(158, 212, 255, 0.34)"],
     },
@@ -228,7 +228,7 @@ const celestialData = [
     colors: ["#e6fbff", "#8bd7ff", "#d2b6ff"],
     orbitRadius: 575,
     size: 34,
-    speed: 0.000004,
+    speed: 0.000006,
     angle: 0.98,
   },
 ];
@@ -267,6 +267,7 @@ let focusedObjectId = null;
 let stars = [];
 let lastFixedLayoutKey = "";
 let animationFrameId = null;
+let renderFallbackId = null;
 let resizeFrameId = null;
 let holdTimer = null;
 let objectPressCandidateId = null;
@@ -626,23 +627,37 @@ function finishObjectDrag() {
 }
 
 function scheduleRender() {
-  if (animationFrameId !== null || document.hidden) {
+  if (animationFrameId !== null) {
     return;
   }
 
   animationFrameId = requestAnimationFrame(renderObjects);
+  renderFallbackId = window.setTimeout(() => {
+    if (animationFrameId === null) {
+      return;
+    }
+
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+    renderObjects(performance.now());
+  }, 220);
 }
 
 function renderObjects(time = 0) {
   animationFrameId = null;
+  if (renderFallbackId !== null) {
+    window.clearTimeout(renderFallbackId);
+    renderFallbackId = null;
+  }
   const delta = lastTime ? time - lastTime : 16;
   lastTime = time;
   const now = performance.now();
 
   const dragCoolingDown = now - dragSettledAt < 1200;
-  if (!prefersReducedMotion && !isDragging && !dragCoolingDown) {
-    autoAngle += delta * 0.000006;
-    orbitTime += delta;
+  if (!isDragging && !dragCoolingDown) {
+    const motionScale = prefersReducedMotion ? 0.35 : 1;
+    autoAngle += delta * 0.000001 * motionScale;
+    orbitTime += delta * motionScale;
   }
 
   const stageScale = getStageScale() * zoom;
@@ -919,10 +934,6 @@ function bindEvents() {
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
-      if (animationFrameId !== null) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
       lastTime = 0;
       return;
     }

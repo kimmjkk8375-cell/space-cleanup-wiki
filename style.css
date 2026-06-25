@@ -400,7 +400,8 @@ main,
   cursor: pointer;
   transform-style: preserve-3d;
   transition: filter 360ms ease, opacity 360ms ease;
-  contain: layout paint;
+  overflow: visible;
+  contain: layout;
   will-change: transform, opacity;
 }
 
@@ -446,18 +447,45 @@ main,
 
 .surface-drift {
   position: absolute;
-  inset: -20%;
+  inset: -26%;
   z-index: 1;
   border-radius: inherit;
   background:
-    radial-gradient(circle at 24% 36%, rgba(255, 255, 255, 0.28) 0 5%, transparent 6%),
-    radial-gradient(circle at 70% 66%, rgba(255, 255, 255, 0.18) 0 4%, transparent 5%),
-    repeating-linear-gradient(92deg, transparent 0 13%, rgba(255, 255, 255, 0.2) 16% 20%, transparent 24% 38%, rgba(0, 0, 0, 0.22) 42% 46%, transparent 50% 64%);
+    radial-gradient(circle at 24% 36%, rgba(255, 255, 255, 0.42) 0 6%, transparent 7%),
+    radial-gradient(circle at 70% 66%, rgba(255, 255, 255, 0.28) 0 5%, transparent 6%),
+    repeating-linear-gradient(92deg, transparent 0 10%, rgba(255, 255, 255, 0.34) 13% 18%, transparent 22% 34%, rgba(0, 0, 0, 0.3) 38% 44%, transparent 48% 60%);
   mix-blend-mode: soft-light;
-  opacity: 0.82;
+  opacity: 0.95;
   pointer-events: none;
   animation: surface-drift var(--spin-duration, 64s) linear infinite;
   animation-direction: var(--spin-direction, normal);
+}
+
+.surface-drift::before,
+.surface-drift::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.surface-drift::before {
+  top: 18%;
+  left: -22%;
+  width: 144%;
+  height: 24%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), rgba(130, 220, 255, 0.28), transparent);
+  transform: rotate(var(--axial-tilt, 0deg));
+}
+
+.surface-drift::after {
+  top: 30%;
+  left: 22%;
+  width: 18%;
+  height: 18%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 0 12px rgba(225, 250, 255, 0.58);
 }
 
 .orbital-object.is-focused .planet-body,
@@ -507,8 +535,9 @@ main,
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 3;
+  z-index: 6;
   border-radius: 50%;
+  opacity: 1;
   pointer-events: none;
   transform: translate(-50%, -50%) rotate(var(--ring-tilt, -14deg));
 }
@@ -522,28 +551,29 @@ main,
 }
 
 .planet-ring::before {
-  background:
-    radial-gradient(ellipse at center, transparent 0 38%, var(--ring-a) 41% 48%, rgba(255, 255, 255, 0.38) 49% 51%, var(--ring-b) 53% 62%, transparent 65%),
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.26), transparent);
+  border: 3px solid var(--ring-a);
+  background: radial-gradient(ellipse at center, transparent 0 45%, rgba(255, 255, 255, 0.2) 48% 52%, transparent 56%);
   box-shadow:
-    0 0 18px rgba(165, 222, 255, 0.22),
-    0 0 34px rgba(255, 245, 210, 0.14);
-  opacity: 0.96;
+    0 0 12px var(--ring-a),
+    0 0 24px rgba(165, 222, 255, 0.3),
+    inset 0 0 14px var(--ring-b);
+  opacity: 1;
 }
 
 .planet-ring::after {
-  background: radial-gradient(ellipse at center, transparent 0 47%, rgba(255, 255, 255, 0.46) 49% 56%, transparent 62%);
-  clip-path: inset(50% 0 0 0);
-  opacity: 0.9;
+  inset: 17%;
+  border: 2px solid var(--ring-b);
+  opacity: 0.88;
 }
 
 .moon-orbit {
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 4;
-  border: 1px solid rgba(175, 217, 238, 0.24);
+  z-index: 7;
+  border: 1px solid rgba(190, 232, 255, 0.42);
   border-radius: 50%;
+  box-shadow: 0 0 12px rgba(160, 220, 255, 0.16);
   pointer-events: none;
   transform: translate(-50%, -50%) rotate(var(--moon-angle, 0deg));
   animation: moon-orbit var(--moon-duration, 30s) linear infinite;
@@ -561,8 +591,8 @@ main,
     radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.8), transparent 32%),
     var(--moon-color, #d8eaff);
   box-shadow:
-    0 0 8px rgba(235, 250, 255, 0.45),
-    0 0 18px rgba(130, 210, 255, 0.18);
+    0 0 8px rgba(235, 250, 255, 0.78),
+    0 0 20px rgba(130, 210, 255, 0.36);
   transform: translateY(-50%);
 }
 
@@ -1162,8 +1192,6 @@ main,
   *,
   *::before,
   *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
   }
@@ -1177,6 +1205,6 @@ main,
   .planet-body::after,
   .surface-drift,
   .moon-orbit {
-    animation: none !important;
+    animation-duration: 120s !important;
   }
 }
