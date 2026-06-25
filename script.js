@@ -4,10 +4,12 @@ const planetData = [
     name: "Beginner Guide",
     description: "Core controls, early scavenging routes, and the first upgrades every collector should understand.",
     page: "pages/beginner-guide.html",
-    color: "#8fd3ff",
-    orbitRadius: 170,
-    size: 30,
-    speed: 0.00009,
+    kind: "gas",
+    category: "Wiki Planet",
+    colors: ["#f3c9d8", "#a9e8ff", "#fff0a8"],
+    orbitRadius: 178,
+    size: 34,
+    speed: 0.000032,
     angle: 0.2,
   },
   {
@@ -15,10 +17,12 @@ const planetData = [
     name: "World",
     description: "A map of ruined machine zones, salvage routes, safe points, and the wider orbital frontier.",
     page: "pages/world.html",
-    color: "#b9a8ff",
-    orbitRadius: 220,
-    size: 38,
-    speed: 0.000072,
+    kind: "rock",
+    category: "Wiki Planet",
+    colors: ["#b68a69", "#695346", "#d8c0a0"],
+    orbitRadius: 238,
+    size: 44,
+    speed: 0.000026,
     angle: 1.18,
   },
   {
@@ -26,10 +30,12 @@ const planetData = [
     name: "Orbit-Zero",
     description: "The first dead machine planet and the starting point of the JUNK COLLECTORS expedition.",
     page: "pages/orbit-zero.html",
-    color: "#8fe6c8",
-    orbitRadius: 270,
-    size: 34,
-    speed: 0.000066,
+    kind: "machine",
+    category: "Wiki Planet",
+    colors: ["#7fdcc9", "#4b6570", "#d8ffff"],
+    orbitRadius: 296,
+    size: 40,
+    speed: 0.000023,
     angle: 2.08,
   },
   {
@@ -37,10 +43,12 @@ const planetData = [
     name: "AREA AI",
     description: "A damaged guardian intelligence still maintaining the dead machine planet.",
     page: "pages/area-ai.html",
-    color: "#7df6ff",
-    orbitRadius: 220,
-    size: 34,
-    speed: 0.000078,
+    kind: "storm",
+    category: "Wiki Planet",
+    colors: ["#7df6ff", "#8b8cff", "#e9faff"],
+    orbitRadius: 232,
+    size: 38,
+    speed: 0.000028,
     angle: 3.05,
   },
   {
@@ -48,10 +56,12 @@ const planetData = [
     name: "Items",
     description: "Scrap, tools, upgrade parts, field supplies, and rare salvage found across the system.",
     page: "pages/items.html",
-    color: "#d8c27a",
-    orbitRadius: 315,
-    size: 29,
-    speed: 0.000052,
+    kind: "desert",
+    category: "Wiki Planet",
+    colors: ["#d8c27a", "#b88648", "#f4e2a6"],
+    orbitRadius: 340,
+    size: 33,
+    speed: 0.000019,
     angle: 3.92,
   },
   {
@@ -59,10 +69,12 @@ const planetData = [
     name: "Monsters",
     description: "Hostile machines, corrupted collectors, and roaming threats that patrol the abandoned zones.",
     page: "pages/monsters.html",
-    color: "#c77d86",
-    orbitRadius: 275,
-    size: 36,
-    speed: 0.000061,
+    kind: "cracked",
+    category: "Wiki Planet",
+    colors: ["#c77d86", "#432c3e", "#ffb2a8"],
+    orbitRadius: 304,
+    size: 42,
+    speed: 0.000022,
     angle: 4.86,
   },
   {
@@ -70,19 +82,65 @@ const planetData = [
     name: "Updates",
     description: "Patch notes, balance changes, new sectors, and wiki revision history.",
     page: "pages/updates.html",
-    color: "#bdf7d0",
-    orbitRadius: 350,
-    size: 28,
-    speed: 0.000048,
+    kind: "ice",
+    category: "Wiki Planet",
+    colors: ["#bdf7d0", "#9ed4ff", "#ffffff"],
+    orbitRadius: 374,
+    size: 32,
+    speed: 0.000017,
     angle: 5.72,
   },
 ];
 
+const celestialData = [
+  {
+    id: "black-hole",
+    name: "Black Hole",
+    description: "A silent gravity well at the edge of the route map. It stores lore about lost sectors and forbidden salvage.",
+    page: "pages/black-hole.html",
+    kind: "black-hole",
+    category: "Deep-Space Object",
+    colors: ["#000000", "#7aa3ff", "#e8f8ff"],
+    orbitRadius: 430,
+    size: 82,
+    speed: 0.000011,
+    angle: 2.74,
+  },
+  {
+    id: "quasar",
+    name: "Quasar Gate",
+    description: "A distant blue-white beacon used for long-range navigation, signal archives, and future expansion notes.",
+    page: "pages/quasar.html",
+    kind: "quasar",
+    category: "Deep-Space Object",
+    colors: ["#c9f5ff", "#5a7cff", "#fff6bd"],
+    orbitRadius: 462,
+    size: 74,
+    speed: 0.000009,
+    angle: 0.96,
+  },
+  {
+    id: "relic-comet",
+    name: "Relic Comet",
+    description: "A slow-moving ice-and-scrap body carrying fragments of old machines and rare field rumors.",
+    page: "pages/relic-comet.html",
+    kind: "comet",
+    category: "Deep-Space Object",
+    colors: ["#e6fbff", "#8bd7ff", "#d2b6ff"],
+    orbitRadius: 404,
+    size: 30,
+    speed: 0.000014,
+    angle: 5.28,
+  },
+];
+
+const allObjects = [...planetData, ...celestialData];
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const stage = document.querySelector("#system-stage");
 const orbitField = document.querySelector("#orbit-field");
 const pageGrid = document.querySelector("#page-grid");
 const panel = document.querySelector("#info-panel");
+const panelKicker = document.querySelector("#panel-kicker");
 const panelTitle = document.querySelector("#panel-title");
 const panelDescription = document.querySelector("#panel-description");
 const panelLink = document.querySelector("#panel-link");
@@ -98,61 +156,94 @@ let dragStartX = 0;
 let dragStartRotation = 0;
 let isDragging = false;
 let didDrag = false;
-let pointerStartPlanetId = null;
+let pointerStartObjectId = null;
 let dragSettledAt = 0;
-let selectedPlanetId = null;
+let selectedObjectId = null;
+let focusedObjectId = null;
+let stars = [];
 
-function createPlanets() {
-  planetData.forEach((planet) => {
+function createObjects() {
+  allObjects.forEach((item) => {
     const button = document.createElement("button");
-    button.className = "planet";
+    button.className = `${celestialData.includes(item) ? "celestial" : "planet"} orbital-object ${item.kind}`;
     button.type = "button";
-    button.dataset.id = planet.id;
-    button.style.setProperty("--planet-color", planet.color);
-    button.style.width = `${planet.size}px`;
-    button.style.height = `${planet.size}px`;
-    button.setAttribute("aria-label", `Open ${planet.name} information`);
+    button.dataset.id = item.id;
+    button.dataset.kind = item.kind;
+    button.style.setProperty("--object-a", item.colors[0]);
+    button.style.setProperty("--object-b", item.colors[1]);
+    button.style.setProperty("--object-c", item.colors[2]);
+    button.style.width = `${item.size}px`;
+    button.style.height = `${item.size}px`;
+    button.setAttribute("aria-label", `Open ${item.name} information`);
 
     const body = document.createElement("span");
-    body.className = "planet-body";
+    body.className = celestialData.includes(item) ? "celestial-body" : "planet-body";
     body.setAttribute("aria-hidden", "true");
 
     const label = document.createElement("span");
-    label.className = "planet-label";
-    label.textContent = planet.name;
+    label.className = "object-label";
+    label.textContent = item.name;
 
     button.append(body, label);
     orbitField.appendChild(button);
 
+    button.addEventListener("pointerenter", () => focusObject(item.id));
+    button.addEventListener("pointerleave", () => clearFocus());
+    button.addEventListener("focus", () => focusObject(item.id));
+    button.addEventListener("blur", () => clearFocus());
+
     const card = document.createElement("a");
     card.className = "page-card";
-    card.href = planet.page;
-    card.innerHTML = `<strong>${planet.name}</strong><span>${planet.description}</span>`;
+    card.href = item.page;
+    card.innerHTML = `<strong>${item.name}</strong><span>${item.description}</span>`;
     pageGrid.appendChild(card);
   });
 }
 
+function findObject(id) {
+  return allObjects.find((item) => item.id === id);
+}
+
 function openPanel(id) {
-  const planet = planetData.find((item) => item.id === id);
-  if (!planet) {
+  const item = findObject(id);
+  if (!item) {
     return;
   }
 
-  selectedPlanetId = id;
-  panelTitle.textContent = planet.name;
-  panelDescription.textContent = planet.description;
-  panelLink.href = planet.page;
+  selectedObjectId = id;
+  panelKicker.textContent = item.category;
+  panelTitle.textContent = item.name;
+  panelDescription.textContent = item.description;
+  panelLink.href = item.page;
   panel.hidden = false;
 
-  document.querySelectorAll(".planet").forEach((node) => {
+  document.querySelectorAll(".orbital-object").forEach((node) => {
     node.classList.toggle("is-selected", node.dataset.id === id);
   });
 }
 
 function closePanel() {
-  selectedPlanetId = null;
+  selectedObjectId = null;
   panel.hidden = true;
-  document.querySelectorAll(".planet").forEach((node) => node.classList.remove("is-selected"));
+  document.querySelectorAll(".orbital-object").forEach((node) => node.classList.remove("is-selected"));
+}
+
+function focusObject(id) {
+  focusedObjectId = id;
+  stage.classList.add("is-focusing");
+  document.querySelectorAll(".orbital-object").forEach((node) => {
+    const isFocused = node.dataset.id === id;
+    node.classList.toggle("is-focused", isFocused);
+    node.classList.toggle("is-dimmed", !isFocused);
+  });
+}
+
+function clearFocus() {
+  focusedObjectId = null;
+  stage.classList.remove("is-focusing");
+  document.querySelectorAll(".orbital-object").forEach((node) => {
+    node.classList.remove("is-focused", "is-dimmed");
+  });
 }
 
 function clamp(value, min, max) {
@@ -162,99 +253,106 @@ function clamp(value, min, max) {
 function getStageScale() {
   const width = stage.clientWidth;
   if (width < 520) {
-    return 0.66;
+    return 0.56;
   }
   if (width < 760) {
-    return 0.82;
+    return 0.76;
   }
   return 1;
 }
 
-function renderPlanets(time = 0) {
+function renderObjects(time = 0) {
   const delta = lastTime ? time - lastTime : 16;
   lastTime = time;
 
-  const dragCoolingDown = performance.now() - dragSettledAt < 900;
+  const dragCoolingDown = performance.now() - dragSettledAt < 1200;
   if (!prefersReducedMotion && !isDragging && !dragCoolingDown) {
-    autoAngle += delta * 0.000055;
+    autoAngle += delta * 0.000023;
     orbitTime += delta;
   }
 
   const stageScale = getStageScale() * zoom;
   const tilt = 0.34;
-  const nodes = document.querySelectorAll(".planet");
+  const nodes = document.querySelectorAll(".orbital-object");
 
-  planetData.forEach((planet, index) => {
+  allObjects.forEach((item, index) => {
     const node = nodes[index];
-    const angle = planet.angle + autoAngle + rotation + orbitTime * planet.speed;
-    const radius = planet.orbitRadius * stageScale;
+    const angle = item.angle + autoAngle + rotation + orbitTime * item.speed;
+    const radius = item.orbitRadius * stageScale;
     const x = Math.cos(angle) * radius;
     const z = Math.sin(angle);
     const y = Math.sin(angle) * radius * tilt;
-    const depthScale = 0.76 + (z + 1) * 0.18;
-    const opacity = 0.62 + (z + 1) * 0.19;
+    const depthScale = 0.7 + (z + 1) * 0.16;
+    const opacity = 0.7 + (z + 1) * 0.13;
 
     node.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${depthScale})`;
     node.style.zIndex = String(Math.round((z + 1) * 100));
     node.style.opacity = String(opacity);
   });
 
-  requestAnimationFrame(renderPlanets);
+  requestAnimationFrame(renderObjects);
 }
 
 function setZoom(nextZoom) {
-  zoom = clamp(nextZoom, 0.78, 1.16);
+  zoom = clamp(nextZoom, 0.76, 1.14);
 }
 
-function drawStarfield() {
+function setupStars() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const count = Math.floor(Math.min(280, Math.max(110, width * height * 0.00015)));
+
+  stars = Array.from({ length: count }, (_, index) => ({
+    x: (Math.sin(index * 92.173) * 0.5 + 0.5) * width,
+    y: (Math.sin(index * 38.519 + 8) * 0.5 + 0.5) * height,
+    radius: 0.35 + ((index * 17) % 10) * 0.08,
+    phase: index * 0.77,
+    glow: index % 11 === 0,
+  }));
+}
+
+function drawStarfield(time = 0) {
   const context = starfield.getContext("2d");
   const pixelRatio = window.devicePixelRatio || 1;
   const width = window.innerWidth;
   const height = window.innerHeight;
 
-  starfield.width = Math.floor(width * pixelRatio);
-  starfield.height = Math.floor(height * pixelRatio);
-  starfield.style.width = `${width}px`;
-  starfield.style.height = `${height}px`;
+  if (starfield.width !== Math.floor(width * pixelRatio) || starfield.height !== Math.floor(height * pixelRatio)) {
+    starfield.width = Math.floor(width * pixelRatio);
+    starfield.height = Math.floor(height * pixelRatio);
+    starfield.style.width = `${width}px`;
+    starfield.style.height = `${height}px`;
+    setupStars();
+  }
+
   context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   context.clearRect(0, 0, width, height);
-
-  const gradient = context.createRadialGradient(width * 0.52, height * 0.44, 0, width * 0.52, height * 0.44, Math.max(width, height) * 0.72);
-  gradient.addColorStop(0, "rgba(65, 135, 180, 0.11)");
-  gradient.addColorStop(0.45, "rgba(15, 31, 53, 0.18)");
-  gradient.addColorStop(1, "rgba(3, 6, 12, 0)");
-  context.fillStyle = gradient;
+  context.fillStyle = "#000000";
   context.fillRect(0, 0, width, height);
 
-  const starCount = Math.floor(Math.min(240, Math.max(90, width * height * 0.00013)));
-  for (let i = 0; i < starCount; i += 1) {
-    const x = (Math.sin(i * 92.173) * 0.5 + 0.5) * width;
-    const y = (Math.sin(i * 38.519 + 8) * 0.5 + 0.5) * height;
-    const radius = 0.35 + ((i * 17) % 9) * 0.08;
-    const alpha = 0.22 + ((i * 13) % 8) * 0.055;
-
+  stars.forEach((star) => {
+    const twinkle = prefersReducedMotion ? 0.55 : 0.46 + Math.sin(time * 0.00042 + star.phase) * 0.18;
     context.beginPath();
-    context.fillStyle = `rgba(212, 238, 255, ${alpha})`;
-    context.arc(x, y, radius, 0, Math.PI * 2);
+    context.fillStyle = `rgba(222, 242, 255, ${twinkle})`;
+    context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
     context.fill();
-  }
 
-  for (let i = 0; i < 46; i += 1) {
-    const x = (Math.sin(i * 71.7 + 4) * 0.5 + 0.5) * width;
-    const y = (Math.sin(i * 29.9 + 2) * 0.5 + 0.5) * height;
-    const radius = 24 + ((i * 19) % 46);
-    const nebula = context.createRadialGradient(x, y, 0, x, y, radius);
-    nebula.addColorStop(0, "rgba(92, 155, 198, 0.05)");
-    nebula.addColorStop(1, "rgba(92, 155, 198, 0)");
-    context.fillStyle = nebula;
-    context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
-  }
+    if (star.glow) {
+      const glow = context.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius * 7);
+      glow.addColorStop(0, `rgba(170, 220, 255, ${twinkle * 0.18})`);
+      glow.addColorStop(1, "rgba(170, 220, 255, 0)");
+      context.fillStyle = glow;
+      context.fillRect(star.x - star.radius * 7, star.y - star.radius * 7, star.radius * 14, star.radius * 14);
+    }
+  });
+
+  requestAnimationFrame(drawStarfield);
 }
 
 function handlePointerDown(event) {
   isDragging = true;
   didDrag = false;
-  pointerStartPlanetId = event.target.closest(".planet")?.dataset.id || null;
+  pointerStartObjectId = event.target.closest(".orbital-object")?.dataset.id || null;
   dragStartX = event.clientX;
   dragStartRotation = rotation;
   stage.setPointerCapture(event.pointerId);
@@ -270,7 +368,7 @@ function handlePointerMove(event) {
   if (Math.abs(movement) > 4) {
     didDrag = true;
   }
-  rotation = dragStartRotation + movement * 0.008;
+  rotation = dragStartRotation + movement * 0.0065;
 }
 
 function handlePointerUp(event) {
@@ -283,11 +381,11 @@ function handlePointerUp(event) {
   stage.releasePointerCapture(event.pointerId);
   document.body.classList.remove("is-dragging");
 
-  if (!didDrag && pointerStartPlanetId) {
-    openPanel(pointerStartPlanetId);
+  if (!didDrag && pointerStartObjectId) {
+    openPanel(pointerStartObjectId);
   }
 
-  pointerStartPlanetId = null;
+  pointerStartObjectId = null;
 }
 
 function bindEvents() {
@@ -300,7 +398,7 @@ function bindEvents() {
     "wheel",
     (event) => {
       event.preventDefault();
-      setZoom(zoom + (event.deltaY < 0 ? 0.045 : -0.045));
+      setZoom(zoom + (event.deltaY < 0 ? 0.04 : -0.04));
     },
     { passive: false },
   );
@@ -308,7 +406,7 @@ function bindEvents() {
   document.querySelectorAll("[data-zoom]").forEach((button) => {
     button.addEventListener("click", () => {
       const direction = button.dataset.zoom === "in" ? 1 : -1;
-      setZoom(zoom + direction * 0.08);
+      setZoom(zoom + direction * 0.07);
     });
   });
 
@@ -320,11 +418,12 @@ function bindEvents() {
     }
   });
 
-  window.addEventListener("resize", drawStarfield);
+  window.addEventListener("resize", setupStars);
 }
 
-createPlanets();
+createObjects();
 bindEvents();
-drawStarfield();
+setupStars();
 openPanel("beginner-guide");
-requestAnimationFrame(renderPlanets);
+requestAnimationFrame(renderObjects);
+requestAnimationFrame(drawStarfield);

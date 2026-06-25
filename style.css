@@ -1,16 +1,16 @@
 :root {
   color-scheme: dark;
-  --bg: #050811;
-  --panel: rgba(12, 18, 30, 0.72);
-  --panel-strong: rgba(15, 25, 42, 0.88);
-  --line: rgba(167, 198, 225, 0.18);
-  --line-strong: rgba(173, 220, 244, 0.34);
+  --bg: #000000;
+  --panel: rgba(5, 8, 14, 0.72);
+  --panel-strong: rgba(8, 12, 20, 0.9);
+  --line: rgba(190, 218, 240, 0.16);
+  --line-strong: rgba(202, 238, 255, 0.34);
   --text: #edf7ff;
-  --muted: #9fb1c7;
-  --dim: #6f8095;
-  --cyan: #9fefff;
-  --white-blue: #e9fbff;
-  --shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
+  --muted: #a4b4c8;
+  --dim: #74849a;
+  --cyan: #b8f3ff;
+  --white-blue: #f0fbff;
+  --shadow: 0 24px 90px rgba(0, 0, 0, 0.62);
 }
 
 * {
@@ -20,7 +20,7 @@
 html {
   min-height: 100%;
   overflow-x: hidden;
-  background: var(--bg);
+  background: #000;
 }
 
 body {
@@ -28,10 +28,7 @@ body {
   margin: 0;
   overflow-x: hidden;
   color: var(--text);
-  background:
-    radial-gradient(circle at 50% 42%, rgba(71, 142, 193, 0.16), transparent 34rem),
-    radial-gradient(circle at 12% 12%, rgba(110, 170, 230, 0.12), transparent 28rem),
-    linear-gradient(180deg, #060a14 0%, #03050b 58%, #070a10 100%);
+  background: #000;
   font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   line-height: 1.6;
 }
@@ -70,8 +67,8 @@ button {
   justify-content: space-between;
   gap: 18px;
   padding: 16px clamp(18px, 4vw, 52px);
-  border-bottom: 1px solid rgba(155, 190, 220, 0.1);
-  background: linear-gradient(180deg, rgba(4, 8, 16, 0.82), rgba(4, 8, 16, 0.3));
+  border-bottom: 1px solid rgba(198, 225, 244, 0.08);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.2));
   backdrop-filter: blur(18px);
 }
 
@@ -88,13 +85,13 @@ button {
   height: 42px;
   place-items: center;
   flex: 0 0 auto;
-  border: 1px solid rgba(176, 237, 255, 0.34);
+  border: 1px solid rgba(176, 237, 255, 0.28);
   border-radius: 8px;
   color: var(--white-blue);
   background:
-    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.38), transparent 32%),
-    linear-gradient(135deg, rgba(63, 145, 180, 0.72), rgba(28, 48, 82, 0.95));
-  box-shadow: 0 0 30px rgba(103, 206, 235, 0.22);
+    radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.34), transparent 30%),
+    linear-gradient(135deg, rgba(58, 95, 118, 0.72), rgba(14, 24, 42, 0.95));
+  box-shadow: 0 0 26px rgba(133, 215, 240, 0.18);
   font-size: 13px;
   font-weight: 900;
 }
@@ -133,7 +130,7 @@ button {
 .top-links a:focus-visible {
   border-color: var(--line);
   color: var(--white-blue);
-  background: rgba(159, 239, 255, 0.08);
+  background: rgba(159, 239, 255, 0.07);
 }
 
 .system-hero {
@@ -146,10 +143,22 @@ button {
   isolation: isolate;
 }
 
+.system-hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  background:
+    radial-gradient(circle at 50% 52%, rgba(120, 190, 220, 0.08), transparent 25rem),
+    radial-gradient(circle at 72% 26%, rgba(115, 120, 210, 0.055), transparent 18rem),
+    radial-gradient(circle at 22% 76%, rgba(95, 160, 130, 0.045), transparent 16rem);
+  pointer-events: none;
+}
+
 .system-stage {
   position: relative;
-  width: min(82vw, 920px);
-  height: min(72vh, 720px);
+  width: min(86vw, 1000px);
+  height: min(74vh, 720px);
   min-height: 560px;
   border-radius: 50%;
   outline: none;
@@ -167,14 +176,14 @@ button {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: min(72vw, 780px);
-  height: min(72vw, 780px);
+  width: min(72vw, 820px);
+  height: min(72vw, 820px);
   content: "";
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background:
-    radial-gradient(circle, rgba(170, 232, 255, 0.06) 0, transparent 30%),
-    radial-gradient(circle, transparent 55%, rgba(109, 165, 205, 0.04) 66%, transparent 68%);
+    radial-gradient(circle, rgba(170, 232, 255, 0.045) 0, transparent 24%),
+    radial-gradient(circle, transparent 60%, rgba(128, 170, 205, 0.028) 68%, transparent 70%);
   filter: blur(1px);
 }
 
@@ -182,15 +191,15 @@ button {
   position: absolute;
   top: 50%;
   left: 50%;
-  border: 1px solid rgba(158, 205, 232, 0.16);
+  border: 1px solid rgba(158, 205, 232, 0.11);
   border-radius: 50%;
   transform: translate(-50%, -50%) rotateX(68deg);
   pointer-events: none;
 }
 
 .ring-a {
-  width: 410px;
-  height: 410px;
+  width: 390px;
+  height: 390px;
 }
 
 .ring-b {
@@ -199,8 +208,8 @@ button {
 }
 
 .ring-c {
-  width: 730px;
-  height: 730px;
+  width: 760px;
+  height: 760px;
 }
 
 .star-core {
@@ -209,60 +218,65 @@ button {
   left: 50%;
   z-index: 240;
   display: grid;
-  width: clamp(172px, 23vw, 238px);
-  height: clamp(172px, 23vw, 238px);
+  width: clamp(112px, 13vw, 152px);
+  height: clamp(112px, 13vw, 152px);
   place-items: center;
-  padding: 24px;
+  padding: 18px;
   transform: translate(-50%, -50%);
-  border: 1px solid rgba(218, 250, 255, 0.56);
+  border: 1px solid rgba(218, 250, 255, 0.42);
   border-radius: 50%;
   color: var(--text);
   background:
-    radial-gradient(circle at 42% 36%, #ffffff 0%, #d9fbff 16%, #87daf6 31%, rgba(43, 96, 142, 0.82) 56%, rgba(14, 31, 59, 0.7) 72%),
-    #16304f;
+    radial-gradient(circle at 42% 36%, #ffffff 0%, #dffcff 18%, #8cdcf0 35%, rgba(28, 73, 105, 0.78) 58%, rgba(8, 18, 34, 0.84) 76%),
+    #102a42;
   box-shadow:
-    0 0 36px rgba(196, 249, 255, 0.48),
-    0 0 110px rgba(100, 198, 230, 0.28),
-    inset 0 0 36px rgba(255, 255, 255, 0.22);
+    0 0 28px rgba(196, 249, 255, 0.34),
+    0 0 74px rgba(100, 198, 230, 0.18),
+    inset 0 0 28px rgba(255, 255, 255, 0.18);
   text-align: center;
 }
 
 .star-core::before,
 .star-core::after {
   position: absolute;
-  inset: -24px;
   content: "";
   border-radius: inherit;
-  background: radial-gradient(circle, rgba(140, 226, 255, 0.34), transparent 68%);
+  pointer-events: none;
+}
+
+.star-core::before {
+  inset: -16px;
+  background: radial-gradient(circle, rgba(140, 226, 255, 0.24), transparent 66%);
   filter: blur(10px);
   z-index: -1;
 }
 
 .star-core::after {
-  inset: -58px;
-  opacity: 0.45;
-  filter: blur(28px);
+  inset: -38px;
+  background: radial-gradient(circle, rgba(120, 210, 240, 0.12), transparent 72%);
+  filter: blur(22px);
+  z-index: -2;
 }
 
 .star-title {
-  max-width: 180px;
-  font-size: clamp(22px, 3vw, 34px);
+  max-width: 118px;
+  font-size: clamp(15px, 1.7vw, 21px);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: 0;
-  text-shadow: 0 2px 18px rgba(3, 10, 20, 0.36);
+  text-shadow: 0 2px 14px rgba(3, 10, 20, 0.42);
   word-break: keep-all;
 }
 
 .star-subtitle {
-  margin-top: -34px;
-  color: rgba(243, 252, 255, 0.86);
-  font-size: clamp(11px, 1.4vw, 14px);
-  font-weight: 700;
+  margin-top: -18px;
+  color: rgba(243, 252, 255, 0.82);
+  font-size: clamp(8px, 0.9vw, 10px);
+  font-weight: 800;
   white-space: nowrap;
 }
 
-.planet {
+.orbital-object {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -275,59 +289,261 @@ button {
   background: transparent;
   cursor: pointer;
   transform-style: preserve-3d;
-  transition: filter 180ms ease, opacity 180ms ease;
+  transition: filter 520ms ease, opacity 520ms ease;
 }
 
-.planet:focus-visible {
+.orbital-object:focus-visible {
   outline: 2px solid var(--cyan);
-  outline-offset: 8px;
+  outline-offset: 9px;
 }
 
-.planet:hover,
-.planet.is-selected {
-  filter: brightness(1.18);
+.orbital-object.is-dimmed {
+  filter: blur(3px) saturate(0.48) brightness(0.58);
 }
 
-.planet-body {
+.orbital-object.is-focused,
+.orbital-object.is-selected {
+  filter: brightness(1.18) saturate(1.12);
+}
+
+.system-stage.is-focusing .orbital-object.is-dimmed {
+  filter: blur(3px) saturate(0.48) brightness(0.58);
+}
+
+.planet-body,
+.celestial-body {
+  position: relative;
   display: block;
   width: 100%;
   height: 100%;
-  border: 1px solid rgba(240, 252, 255, 0.34);
+  border: 1px solid rgba(240, 252, 255, 0.28);
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.78), transparent 18%),
-    radial-gradient(circle at 68% 74%, rgba(0, 0, 0, 0.28), transparent 28%),
-    var(--planet-color);
+  overflow: hidden;
   box-shadow:
-    0 0 20px color-mix(in srgb, var(--planet-color) 55%, transparent),
-    inset -14px -16px 22px rgba(0, 0, 0, 0.28),
-    inset 7px 8px 14px rgba(255, 255, 255, 0.14);
+    0 0 24px rgba(170, 220, 255, 0.16),
+    inset -16px -18px 24px rgba(0, 0, 0, 0.36),
+    inset 7px 8px 15px rgba(255, 255, 255, 0.16);
+  transition: transform 520ms ease, box-shadow 520ms ease;
 }
 
-.planet-label {
+.orbital-object.is-focused .planet-body,
+.orbital-object.is-selected .planet-body,
+.orbital-object.is-focused .celestial-body,
+.orbital-object.is-selected .celestial-body {
+  transform: scale(1.14);
+  box-shadow:
+    0 0 34px rgba(210, 240, 255, 0.32),
+    inset -16px -18px 24px rgba(0, 0, 0, 0.28),
+    inset 7px 8px 15px rgba(255, 255, 255, 0.2);
+}
+
+.planet-body::before,
+.planet-body::after,
+.celestial-body::before,
+.celestial-body::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.gas .planet-body {
+  background:
+    radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.82), transparent 15%),
+    repeating-linear-gradient(156deg, var(--object-a) 0 12%, var(--object-b) 15% 25%, var(--object-c) 29% 40%, var(--object-a) 44% 56%),
+    radial-gradient(circle at 72% 70%, rgba(0, 0, 0, 0.3), transparent 34%);
+}
+
+.gas .planet-body::before {
+  inset: 14% -24%;
+  border-radius: 50%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.24), transparent);
+  transform: rotate(-18deg);
+}
+
+.rock .planet-body {
+  background:
+    radial-gradient(circle at 29% 26%, rgba(255, 255, 255, 0.36), transparent 13%),
+    radial-gradient(circle at 66% 34%, rgba(42, 30, 26, 0.42), transparent 15%),
+    radial-gradient(circle at 36% 72%, rgba(42, 30, 26, 0.34), transparent 18%),
+    linear-gradient(145deg, var(--object-c), var(--object-a) 46%, var(--object-b));
+}
+
+.rock .planet-body::before {
+  inset: 16%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 20% 40%, rgba(0, 0, 0, 0.2) 0 7%, transparent 8%),
+    radial-gradient(circle at 72% 64%, rgba(255, 255, 255, 0.16) 0 5%, transparent 6%);
+  mix-blend-mode: soft-light;
+}
+
+.machine .planet-body {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.22) 0 2px, transparent 2px 10px),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.18) 0 2px, transparent 2px 11px),
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.7), transparent 14%),
+    linear-gradient(145deg, var(--object-a), var(--object-b) 52%, #161b23);
+}
+
+.machine .planet-body::before {
+  inset: 20%;
+  border: 1px solid rgba(225, 255, 255, 0.24);
+  border-radius: 50%;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.28);
+}
+
+.storm .planet-body {
+  background:
+    radial-gradient(circle at 42% 48%, rgba(255, 255, 255, 0.78), transparent 11%),
+    conic-gradient(from 30deg, var(--object-a), var(--object-b), var(--object-c), var(--object-a), var(--object-b)),
+    radial-gradient(circle at 72% 70%, rgba(0, 0, 0, 0.32), transparent 34%);
+}
+
+.storm .planet-body::before {
+  inset: 22% 8%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.28), transparent 58%);
+  transform: rotate(-22deg);
+}
+
+.desert .planet-body {
+  background:
+    radial-gradient(circle at 28% 23%, rgba(255, 255, 255, 0.5), transparent 12%),
+    repeating-linear-gradient(172deg, var(--object-c) 0 11%, var(--object-a) 14% 24%, var(--object-b) 27% 36%),
+    radial-gradient(circle at 70% 72%, rgba(0, 0, 0, 0.28), transparent 35%);
+}
+
+.cracked .planet-body {
+  background:
+    linear-gradient(120deg, transparent 0 42%, rgba(255, 218, 194, 0.46) 43% 45%, transparent 46%),
+    linear-gradient(70deg, transparent 0 58%, rgba(255, 218, 194, 0.34) 59% 61%, transparent 62%),
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.38), transparent 13%),
+    linear-gradient(145deg, var(--object-a), var(--object-b) 62%, #140b13);
+}
+
+.ice .planet-body {
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.88), transparent 15%),
+    linear-gradient(130deg, var(--object-c), var(--object-b) 42%, var(--object-a)),
+    radial-gradient(circle at 70% 72%, rgba(0, 0, 0, 0.22), transparent 30%);
+}
+
+.ice .planet-body::before {
+  inset: 13%;
+  border-radius: 35% 65% 42% 58%;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  transform: rotate(28deg);
+}
+
+.celestial {
+  overflow: visible;
+}
+
+.celestial-body {
+  overflow: visible;
+  border: 0;
+  background: transparent;
+}
+
+.black-hole .celestial-body {
+  background:
+    radial-gradient(circle, #000000 0 31%, rgba(7, 9, 17, 0.98) 32% 43%, rgba(140, 170, 255, 0.18) 44%, transparent 55%);
+  box-shadow:
+    0 0 18px rgba(120, 160, 255, 0.24),
+    0 0 48px rgba(170, 210, 255, 0.12);
+}
+
+.black-hole .celestial-body::before {
+  top: 31%;
+  left: -34%;
+  width: 168%;
+  height: 38%;
+  border-radius: 50%;
+  background:
+    linear-gradient(90deg, transparent, rgba(154, 190, 255, 0.12), rgba(255, 240, 180, 0.42), rgba(145, 205, 255, 0.22), transparent);
+  filter: blur(2px);
+  transform: rotate(-16deg);
+}
+
+.black-hole .celestial-body::after {
+  inset: 23%;
+  border-radius: 50%;
+  background: #000;
+  box-shadow: inset 0 0 18px rgba(130, 180, 255, 0.12);
+}
+
+.quasar .celestial-body {
+  background:
+    radial-gradient(circle, #ffffff 0 9%, var(--object-a) 10% 22%, rgba(90, 124, 255, 0.22) 23% 42%, transparent 43%);
+  box-shadow:
+    0 0 28px rgba(180, 240, 255, 0.34),
+    0 0 90px rgba(90, 124, 255, 0.2);
+}
+
+.quasar .celestial-body::before,
+.quasar .celestial-body::after {
+  top: 46%;
+  left: -80%;
+  width: 260%;
+  height: 10%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(170, 220, 255, 0.52), rgba(255, 247, 190, 0.64), rgba(170, 220, 255, 0.52), transparent);
+  filter: blur(2px);
+  transform: rotate(-24deg);
+}
+
+.quasar .celestial-body::after {
+  opacity: 0.44;
+  transform: rotate(56deg);
+}
+
+.comet .celestial-body {
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9), transparent 18%),
+    linear-gradient(135deg, var(--object-a), var(--object-b), var(--object-c));
+  box-shadow:
+    0 0 22px rgba(180, 230, 255, 0.3),
+    inset -8px -9px 14px rgba(0, 0, 0, 0.24);
+}
+
+.comet .celestial-body::before {
+  top: 31%;
+  right: 62%;
+  width: 140px;
+  height: 38%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(163, 220, 255, 0.38), rgba(210, 190, 255, 0.18));
+  filter: blur(5px);
+}
+
+.object-label {
   position: absolute;
   top: calc(100% + 12px);
   left: 50%;
   min-width: max-content;
   transform: translateX(-50%);
-  border: 1px solid rgba(173, 220, 244, 0.24);
+  border: 1px solid rgba(173, 220, 244, 0.22);
   border-radius: 8px;
   padding: 5px 8px;
   color: #dbeeff;
-  background: rgba(5, 10, 18, 0.72);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.68);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
   font-size: 12px;
   font-weight: 800;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 160ms ease, transform 160ms ease;
+  transition: opacity 420ms ease, transform 420ms ease;
 }
 
-.planet:hover .planet-label,
-.planet:focus-visible .planet-label,
-.planet.is-selected .planet-label {
+.orbital-object.is-focused .object-label,
+.orbital-object.is-selected .object-label,
+.orbital-object:focus-visible .object-label {
   opacity: 1;
   transform: translateX(-50%) translateY(-2px);
+}
+
+.system-stage.is-focusing .orbital-object.is-dimmed .object-label {
+  opacity: 0;
 }
 
 .scene-tools {
@@ -348,7 +564,7 @@ button {
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--text);
-  background: rgba(10, 17, 29, 0.72);
+  background: rgba(4, 7, 12, 0.72);
   cursor: pointer;
   font-size: 18px;
   font-weight: 900;
@@ -359,15 +575,15 @@ button {
 .icon-button:focus-visible,
 .panel-close:focus-visible {
   border-color: var(--line-strong);
-  background: rgba(27, 45, 69, 0.86);
+  background: rgba(16, 24, 38, 0.86);
 }
 
 .info-panel {
   position: absolute;
   right: clamp(16px, 4vw, 54px);
   bottom: clamp(76px, 9vh, 116px);
-  z-index: 14;
-  width: min(360px, calc(100% - 32px));
+  z-index: 260;
+  width: min(380px, calc(100% - 32px));
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   padding: 22px;
@@ -423,7 +639,7 @@ button {
   border-radius: 8px;
   padding: 9px 14px;
   color: #071018;
-  background: linear-gradient(180deg, #dffaff, #91dff1);
+  background: linear-gradient(180deg, #f3fcff, #9fe9f4);
   font-weight: 900;
 }
 
@@ -431,7 +647,7 @@ button {
 .doc-back:hover,
 .read-more:focus-visible,
 .doc-back:focus-visible {
-  filter: brightness(1.08);
+  filter: brightness(1.06);
 }
 
 .drag-hint {
@@ -440,11 +656,11 @@ button {
   left: 50%;
   z-index: 8;
   transform: translateX(-50%);
-  border: 1px solid rgba(169, 205, 230, 0.16);
+  border: 1px solid rgba(169, 205, 230, 0.12);
   border-radius: 8px;
   padding: 8px 12px;
   color: var(--dim);
-  background: rgba(6, 10, 18, 0.5);
+  background: rgba(0, 0, 0, 0.52);
   font-size: 13px;
   text-align: center;
 }
@@ -481,13 +697,13 @@ button {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 15px;
-  background: rgba(13, 20, 33, 0.62);
+  background: rgba(5, 8, 14, 0.74);
 }
 
 .page-card:hover,
 .page-card:focus-visible {
   border-color: var(--line-strong);
-  background: rgba(18, 30, 48, 0.82);
+  background: rgba(12, 18, 28, 0.9);
 }
 
 .page-card strong,
@@ -507,10 +723,10 @@ button {
 }
 
 .site-footer {
-  border-top: 1px solid rgba(155, 190, 220, 0.1);
+  border-top: 1px solid rgba(155, 190, 220, 0.08);
   padding: 24px clamp(18px, 4vw, 52px);
   color: var(--dim);
-  background: rgba(2, 5, 10, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   font-size: 14px;
 }
 
@@ -551,12 +767,12 @@ button {
   }
 
   .system-stage {
-    width: min(92vw, 780px);
+    width: min(94vw, 780px);
   }
 
   .ring-a {
-    width: 340px;
-    height: 340px;
+    width: 330px;
+    height: 330px;
   }
 
   .ring-b {
@@ -565,8 +781,8 @@ button {
   }
 
   .ring-c {
-    width: 620px;
-    height: 620px;
+    width: 640px;
+    height: 640px;
   }
 }
 
@@ -589,8 +805,8 @@ button {
   }
 
   .system-hero {
-    min-height: 830px;
-    padding: 138px 12px 170px;
+    min-height: 840px;
+    padding: 138px 12px 180px;
   }
 
   .system-stage {
@@ -605,13 +821,13 @@ button {
   }
 
   .ring-a {
-    width: 250px;
-    height: 250px;
+    width: 230px;
+    height: 230px;
   }
 
   .ring-b {
-    width: 350px;
-    height: 350px;
+    width: 340px;
+    height: 340px;
   }
 
   .ring-c {
@@ -620,18 +836,19 @@ button {
   }
 
   .star-core {
-    width: 150px;
-    height: 150px;
+    width: 104px;
+    height: 104px;
+    padding: 13px;
   }
 
   .star-title {
-    max-width: 130px;
-    font-size: 22px;
+    max-width: 82px;
+    font-size: 14px;
   }
 
   .star-subtitle {
-    margin-top: -24px;
-    font-size: 10px;
+    margin-top: -16px;
+    font-size: 7px;
   }
 
   .info-panel {
@@ -647,7 +864,7 @@ button {
   }
 
   .drag-hint {
-    bottom: 124px;
+    bottom: 126px;
     width: calc(100% - 32px);
   }
 
