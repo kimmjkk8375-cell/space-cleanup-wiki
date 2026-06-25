@@ -196,11 +196,11 @@ const celestialData = [
     colors: ["#000000", "#7aa3ff", "#e8f8ff"],
     size: 104,
     fixed: true,
-    fixedX: -0.86,
+    fixedX: -0.84,
     fixedY: 0.34,
-    fixedScale: 0.92,
-    fixedOpacity: 0.72,
-    fixedZIndex: 64,
+    fixedScale: 1.02,
+    fixedOpacity: 0.82,
+    fixedZIndex: 62,
   },
   {
     id: "quasar",
@@ -210,13 +210,13 @@ const celestialData = [
     kind: "quasar",
     category: "Deep-Space Object",
     colors: ["#c9f5ff", "#5a7cff", "#fff6bd"],
-    size: 96,
+    size: 122,
     fixed: true,
-    fixedX: 0.88,
-    fixedY: -0.34,
-    fixedScale: 0.78,
-    fixedOpacity: 0.68,
-    fixedZIndex: 66,
+    fixedX: 0.84,
+    fixedY: -0.42,
+    fixedScale: 0.66,
+    fixedOpacity: 0.5,
+    fixedZIndex: 38,
   },
   {
     id: "relic-comet",
@@ -249,6 +249,7 @@ const OBJECT_HOLD_DELAY = 320;
 const OBJECT_HOLD_MOVE_CANCEL = 8;
 const OBJECT_RETURN_DELAY = 1000;
 const OBJECT_RETURN_DURATION = 760;
+const PANEL_TRANSITION_DURATION = 360;
 
 let rotation = 0;
 let zoom = 1;
@@ -269,6 +270,7 @@ let lastFixedLayoutKey = "";
 let animationFrameId = null;
 let renderFallbackId = null;
 let resizeFrameId = null;
+let panelCloseTimer = null;
 let holdTimer = null;
 let objectPressCandidateId = null;
 let objectDragId = null;
@@ -370,12 +372,21 @@ function openPanel(id) {
     return;
   }
 
+  if (panelCloseTimer) {
+    window.clearTimeout(panelCloseTimer);
+    panelCloseTimer = null;
+  }
+
   selectedObjectId = id;
   panelKicker.textContent = item.category;
   panelTitle.textContent = item.name;
   panelDescription.textContent = item.description;
   panelLink.href = item.page;
   panel.hidden = false;
+  panel.classList.remove("is-closing");
+  requestAnimationFrame(() => {
+    panel.classList.add("is-open");
+  });
 
   objectNodes.forEach((node) => {
     node.classList.toggle("is-selected", node.dataset.id === id);
@@ -384,7 +395,16 @@ function openPanel(id) {
 
 function closePanel() {
   selectedObjectId = null;
-  panel.hidden = true;
+  panel.classList.remove("is-open");
+  panel.classList.add("is-closing");
+  if (panelCloseTimer) {
+    window.clearTimeout(panelCloseTimer);
+  }
+  panelCloseTimer = window.setTimeout(() => {
+    panel.hidden = true;
+    panel.classList.remove("is-closing");
+    panelCloseTimer = null;
+  }, PANEL_TRANSITION_DURATION);
   objectNodes.forEach((node) => node.classList.remove("is-selected"));
 }
 
@@ -911,7 +931,15 @@ function bindEvents() {
     });
   });
 
-  panelClose.addEventListener("click", closePanel);
+  panelClose.addEventListener("pointerdown", (event) => {
+    event.stopPropagation();
+    closePanel();
+  });
+
+  panelClose.addEventListener("click", (event) => {
+    event.stopPropagation();
+    closePanel();
+  });
 
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !panel.hidden) {
