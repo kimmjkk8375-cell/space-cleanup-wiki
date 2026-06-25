@@ -73,8 +73,7 @@ button {
   gap: 18px;
   padding: 16px clamp(18px, 4vw, 52px);
   border-bottom: 1px solid rgba(198, 225, 244, 0.08);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.2));
-  backdrop-filter: blur(18px);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.38));
 }
 
 main,
@@ -354,13 +353,11 @@ main,
 @keyframes neutron-core-breathe {
   0%,
   100% {
-    filter: brightness(1);
     transform: scale(1);
   }
 
   50% {
-    filter: brightness(1.18);
-    transform: scale(1.045);
+    transform: scale(1.035);
   }
 }
 
@@ -430,14 +427,6 @@ main,
   filter: blur(1.5px) saturate(0.54) brightness(0.62);
 }
 
-.system-stage:has(.orbital-object:hover) .orbital-object:not(:hover) {
-  filter: blur(1.5px) saturate(0.54) brightness(0.62);
-}
-
-.system-stage:has(.orbital-object:hover) .orbital-object:hover {
-  filter: brightness(1.18) saturate(1.12);
-}
-
 .planet-body,
 .celestial-body {
   position: relative;
@@ -451,7 +440,6 @@ main,
     0 0 24px rgba(170, 220, 255, 0.16),
     inset -16px -18px 24px rgba(0, 0, 0, 0.36),
     inset 7px 8px 15px rgba(255, 255, 255, 0.16);
-  animation: planet-texture-drift var(--spin-duration, 64s) linear infinite;
   transition: transform 520ms ease, box-shadow 520ms ease;
 }
 
@@ -494,16 +482,6 @@ main,
     radial-gradient(circle at 28% 34%, rgba(255, 255, 255, 0.14), transparent 24%);
   mix-blend-mode: soft-light;
   animation: planet-terminator-sweep var(--spin-duration, 64s) linear infinite;
-}
-
-@keyframes planet-texture-drift {
-  from {
-    background-position: 0 0, 0 0, 0 0, 0 0;
-  }
-
-  to {
-    background-position: 160% 0, -120% 0, 80% 0, 0 0;
-  }
 }
 
 @keyframes planet-terminator-sweep {
@@ -637,7 +615,6 @@ main,
   filter: blur(2.2px);
   opacity: 0.88;
   transform: rotate(-17deg);
-  animation: accretion-shimmer 15s ease-in-out infinite alternate;
 }
 
 .black-hole .celestial-body::after {
@@ -670,39 +647,12 @@ main,
   background: linear-gradient(90deg, transparent, rgba(110, 180, 255, 0.18), rgba(220, 250, 255, 0.8), rgba(255, 246, 188, 0.62), rgba(138, 203, 255, 0.26), transparent);
   filter: blur(2.2px);
   transform: rotate(-23deg);
-  animation: quasar-jet-pulse 8s ease-in-out infinite;
 }
 
 .quasar .celestial-body::after {
   height: 5%;
   opacity: 0.5;
   transform: rotate(58deg);
-  animation-delay: -3.2s;
-}
-
-@keyframes accretion-shimmer {
-  from {
-    opacity: 0.66;
-    filter: blur(3px) brightness(0.88);
-  }
-
-  to {
-    opacity: 0.96;
-    filter: blur(1.8px) brightness(1.12);
-  }
-}
-
-@keyframes quasar-jet-pulse {
-  0%,
-  100% {
-    opacity: 0.48;
-    filter: blur(3px) brightness(0.88);
-  }
-
-  50% {
-    opacity: 0.86;
-    filter: blur(1.8px) brightness(1.18);
-  }
 }
 
 .comet .celestial-body {
@@ -752,8 +702,7 @@ main,
   transform: translateX(-50%) translateY(-2px);
 }
 
-.system-stage.is-focusing .orbital-object.is-dimmed .object-label,
-.system-stage:has(.orbital-object:hover) .orbital-object:not(:hover) .object-label {
+.system-stage.is-focusing .orbital-object.is-dimmed .object-label {
   opacity: 0;
 }
 
@@ -798,9 +747,8 @@ main,
   border: 1px solid var(--line-strong);
   border-radius: 8px;
   padding: 22px;
-  background: var(--panel);
+  background: rgba(5, 8, 14, 0.9);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(22px);
 }
 
 .info-panel[hidden] {
@@ -954,7 +902,6 @@ main,
   padding: clamp(22px, 5vw, 46px);
   background: var(--panel-strong);
   box-shadow: var(--shadow);
-  backdrop-filter: blur(18px);
 }
 
 .doc-article h1 {

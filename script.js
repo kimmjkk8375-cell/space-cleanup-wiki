@@ -163,14 +163,12 @@ const OBJECT_HOLD_DELAY = 320;
 const OBJECT_HOLD_MOVE_CANCEL = 8;
 const OBJECT_RETURN_DELAY = 1000;
 const OBJECT_RETURN_DURATION = 760;
-const STARFIELD_FRAME_INTERVAL = 70;
 
 let rotation = 0;
 let zoom = 1;
 let autoAngle = 0;
 let orbitTime = 0;
 let lastTime = 0;
-let lastStarDrawTime = -Infinity;
 let dragStartX = 0;
 let dragStartY = 0;
 let dragStartRotation = 0;
@@ -181,6 +179,9 @@ let dragSettledAt = 0;
 let selectedObjectId = null;
 let focusedObjectId = null;
 let stars = [];
+let lastFixedLayoutKey = "";
+let animationFrameId = null;
+let resizeFrameId = null;
 let holdTimer = null;
 let objectPressCandidateId = null;
 let objectDragId = null;
@@ -221,8 +222,6 @@ function createObjects() {
 
     button.addEventListener("pointerenter", () => focusObject(item.id));
     button.addEventListener("pointerleave", () => clearFocus());
-    button.addEventListener("mouseenter", () => focusObject(item.id));
-    button.addEventListener("mouseleave", () => clearFocus());
     button.addEventListener("focus", () => focusObject(item.id));
     button.addEventListener("blur", () => clearFocus());
 
@@ -263,6 +262,10 @@ function closePanel() {
 }
 
 function focusObject(id) {
+  if (focusedObjectId === id) {
+    return;
+  }
+
   focusedObjectId = id;
   stage.classList.add("is-focusing");
   objectNodes.forEach((node) => {
@@ -274,6 +277,10 @@ function focusObject(id) {
 
 function clearFocus() {
   if (objectDragId) {
+    return;
+  }
+
+  if (!focusedObjectId) {
     return;
   }
 
@@ -336,6 +343,40 @@ function getFixedObjectPosition(item) {
     opacity: item.fixedOpacity,
     zIndex: item.fixedZIndex,
   };
+}
+
+function layoutFixedObjects() {
+  const layoutKey = `${stage.clientWidth}:${stage.clientHeight}:${getFixedScale()}`;
+  if (layoutKey === lastFixedLayoutKey) {
+    return;
+  }
+
+  lastFixedLayoutKey = layoutKey;
+
+  allObjects.forEach((item, index) => {
+    if (!item.fixed) {
+      return;
+    }
+
+    const node = objectNodes[index];
+    const fixedPosition = getFixedObjectPosition(item);
+    node.style.transform = `translate(-50%, -50%) translate3d(${fixedPosition.x}px, ${fixedPosition.y}px, 0) scale(${fixedPosition.scale})`;
+    node.style.zIndex = String(fixedPosition.zIndex);
+    node.style.opacity = String(fixedPosition.opacity);
+
+    objectPositions.set(item.id, {
+      x: fixedPosition.x,
+      y: fixedPosition.y,
+      scale: fixedPosition.scale,
+      opacity: fixedPosition.opacity,
+      zIndex: fixedPosition.zIndex,
+      orbitX: fixedPosition.x,
+      orbitY: fixedPosition.y,
+      orbitScale: fixedPosition.scale,
+      orbitOpacity: fixedPosition.opacity,
+      orbitZIndex: fixedPosition.zIndex,
+    });
+  });
 }
 
 function getScenePoint(clientX, clientY) {
@@ -458,7 +499,16 @@ function finishObjectDrag() {
   objectDragId = null;
 }
 
+function scheduleRender() {
+  if (animationFrameId !== null || document.hidden) {
+    return;
+  }
+
+  animationFrameId = requestAnimationFrame(renderObjects);
+}
+
 function renderObjects(time = 0) {
+  animationFrameId = null;
   const delta = lastTime ? time - lastTime : 16;
   lastTime = time;
   const now = performance.now();
@@ -471,32 +521,22 @@ function renderObjects(time = 0) {
 
   const stageScale = getStageScale() * zoom;
   const tilt = 0.26;
+  layoutFixedObjects();
 
   allObjects.forEach((item, index) => {
-    const node = objectNodes[index];
-    let x;
-    let y;
-    let depthScale;
-    let opacity;
-    let zIndex;
-
     if (item.fixed) {
-      const fixedPosition = getFixedObjectPosition(item);
-      x = fixedPosition.x;
-      y = fixedPosition.y;
-      depthScale = fixedPosition.scale;
-      opacity = fixedPosition.opacity;
-      zIndex = fixedPosition.zIndex;
-    } else {
-      const angle = item.angle + autoAngle + rotation + orbitTime * item.speed;
-      const radius = item.orbitRadius * stageScale;
-      const z = Math.sin(angle);
-      x = Math.cos(angle) * radius;
-      y = z * radius * tilt;
-      depthScale = 0.66 + (z + 1) * 0.18;
-      opacity = 0.68 + (z + 1) * 0.14;
-      zIndex = Math.round(92 + (z + 1) * 96);
+      return;
     }
+
+    const node = objectNodes[index];
+    const angle = item.angle + autoAngle + rotation + orbitTime * item.speed;
+    const radius = item.orbitRadius * stageScale;
+    const z = Math.sin(angle);
+    const x = Math.cos(angle) * radius;
+    const y = z * radius * tilt;
+    const depthScale = 0.66 + (z + 1) * 0.18;
+    const opacity = 0.68 + (z + 1) * 0.14;
+    const zIndex = Math.round(92 + (z + 1) * 96);
 
     let renderX = x;
     let renderY = y;
@@ -568,7 +608,7 @@ function renderObjects(time = 0) {
     });
   });
 
-  requestAnimationFrame(renderObjects);
+  scheduleRender();
 }
 
 function setZoom(nextZoom) {
@@ -599,13 +639,6 @@ function drawStarfield(time = 0) {
   const canvasHeight = Math.floor(height * pixelRatio);
   const needsResize = starfield.width !== canvasWidth || starfield.height !== canvasHeight;
 
-  if (!needsResize && time - lastStarDrawTime < STARFIELD_FRAME_INTERVAL) {
-    requestAnimationFrame(drawStarfield);
-    return;
-  }
-
-  lastStarDrawTime = time;
-
   if (needsResize) {
     starfield.width = canvasWidth;
     starfield.height = canvasHeight;
@@ -620,7 +653,7 @@ function drawStarfield(time = 0) {
   context.fillRect(0, 0, width, height);
 
   stars.forEach((star) => {
-    const twinkle = prefersReducedMotion ? 0.7 : 0.58 + Math.sin(time * 0.00038 + star.phase) * 0.22;
+    const twinkle = 0.5 + Math.sin(star.phase) * 0.18;
     context.beginPath();
     context.fillStyle = `rgba(222, 242, 255, ${twinkle})`;
     context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
@@ -645,8 +678,6 @@ function drawStarfield(time = 0) {
       context.stroke();
     }
   });
-
-  requestAnimationFrame(drawStarfield);
 }
 
 function handlePointerDown(event) {
@@ -748,13 +779,36 @@ function bindEvents() {
   });
 
   window.addEventListener("resize", () => {
-    lastStarDrawTime = -Infinity;
-    setupStars();
+    if (resizeFrameId !== null) {
+      return;
+    }
+
+    resizeFrameId = requestAnimationFrame(() => {
+      resizeFrameId = null;
+      lastFixedLayoutKey = "";
+      layoutFixedObjects();
+      drawStarfield();
+    });
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      lastTime = 0;
+      return;
+    }
+
+    lastTime = 0;
+    lastFixedLayoutKey = "";
+    drawStarfield();
+    scheduleRender();
   });
 }
 
 createObjects();
 bindEvents();
-setupStars();
 renderObjects(0);
 drawStarfield(0);
