@@ -7,7 +7,7 @@ const planetData = [
     kind: "gas",
     category: "Wiki Planet",
     colors: ["#f3c9d8", "#a9e8ff", "#fff0a8"],
-    orbitRadius: 300,
+    orbitRadius: 220,
     size: 34,
     spinDuration: 52,
     speed: 0.000027,
@@ -21,7 +21,7 @@ const planetData = [
     kind: "rock",
     category: "Wiki Planet",
     colors: ["#b68a69", "#695346", "#d8c0a0"],
-    orbitRadius: 460,
+    orbitRadius: 285,
     size: 44,
     spinDuration: 68,
     speed: 0.000022,
@@ -35,7 +35,7 @@ const planetData = [
     kind: "machine",
     category: "Wiki Planet",
     colors: ["#7fdcc9", "#4b6570", "#d8ffff"],
-    orbitRadius: 760,
+    orbitRadius: 440,
     size: 40,
     spinDuration: 74,
     speed: 0.000017,
@@ -49,7 +49,7 @@ const planetData = [
     kind: "storm",
     category: "Wiki Planet",
     colors: ["#7df6ff", "#8b8cff", "#e9faff"],
-    orbitRadius: 620,
+    orbitRadius: 360,
     size: 38,
     spinDuration: 58,
     speed: 0.00002,
@@ -63,7 +63,7 @@ const planetData = [
     kind: "desert",
     category: "Wiki Planet",
     colors: ["#d8c27a", "#b88648", "#f4e2a6"],
-    orbitRadius: 1040,
+    orbitRadius: 485,
     size: 33,
     spinDuration: 63,
     speed: 0.000012,
@@ -77,7 +77,7 @@ const planetData = [
     kind: "cracked",
     category: "Wiki Planet",
     colors: ["#c77d86", "#432c3e", "#ffb2a8"],
-    orbitRadius: 900,
+    orbitRadius: 525,
     size: 42,
     spinDuration: 71,
     speed: 0.000014,
@@ -91,7 +91,7 @@ const planetData = [
     kind: "ice",
     category: "Wiki Planet",
     colors: ["#bdf7d0", "#9ed4ff", "#ffffff"],
-    orbitRadius: 1160,
+    orbitRadius: 560,
     size: 32,
     spinDuration: 78,
     speed: 0.000011,
@@ -108,10 +108,13 @@ const celestialData = [
     kind: "black-hole",
     category: "Deep-Space Object",
     colors: ["#000000", "#7aa3ff", "#e8f8ff"],
-    orbitRadius: 1080,
     size: 104,
-    speed: 0.000007,
-    angle: 2.18,
+    fixed: true,
+    fixedX: -0.86,
+    fixedY: 0.34,
+    fixedScale: 0.92,
+    fixedOpacity: 0.72,
+    fixedZIndex: 64,
   },
   {
     id: "quasar",
@@ -121,10 +124,13 @@ const celestialData = [
     kind: "quasar",
     category: "Deep-Space Object",
     colors: ["#c9f5ff", "#5a7cff", "#fff6bd"],
-    orbitRadius: 1180,
     size: 96,
-    speed: 0.000006,
-    angle: 5.18,
+    fixed: true,
+    fixedX: 0.88,
+    fixedY: -0.34,
+    fixedScale: 0.78,
+    fixedOpacity: 0.68,
+    fixedZIndex: 66,
   },
   {
     id: "relic-comet",
@@ -134,9 +140,9 @@ const celestialData = [
     kind: "comet",
     category: "Deep-Space Object",
     colors: ["#e6fbff", "#8bd7ff", "#d2b6ff"],
-    orbitRadius: 1080,
+    orbitRadius: 575,
     size: 34,
-    speed: 0.000009,
+    speed: 0.000008,
     angle: 0.98,
   },
 ];
@@ -157,12 +163,14 @@ const OBJECT_HOLD_DELAY = 320;
 const OBJECT_HOLD_MOVE_CANCEL = 8;
 const OBJECT_RETURN_DELAY = 1000;
 const OBJECT_RETURN_DURATION = 760;
+const STARFIELD_FRAME_INTERVAL = 70;
 
 let rotation = 0;
 let zoom = 1;
 let autoAngle = 0;
 let orbitTime = 0;
 let lastTime = 0;
+let lastStarDrawTime = -Infinity;
 let dragStartX = 0;
 let dragStartY = 0;
 let dragStartRotation = 0;
@@ -180,11 +188,13 @@ let objectDragOffsetX = 0;
 let objectDragOffsetY = 0;
 const objectPositions = new Map();
 const objectOverrides = new Map();
+const objectNodes = [];
+const objectNodeMap = new Map();
 
 function createObjects() {
   allObjects.forEach((item) => {
     const button = document.createElement("button");
-    button.className = `${celestialData.includes(item) ? "celestial" : "planet"} orbital-object ${item.kind}`;
+    button.className = `${celestialData.includes(item) ? "celestial" : "planet"} orbital-object ${item.kind}${item.fixed ? " fixed-object" : ""}`;
     button.type = "button";
     button.dataset.id = item.id;
     button.dataset.kind = item.kind;
@@ -206,6 +216,8 @@ function createObjects() {
 
     button.append(body, label);
     orbitField.appendChild(button);
+    objectNodes.push(button);
+    objectNodeMap.set(item.id, button);
 
     button.addEventListener("pointerenter", () => focusObject(item.id));
     button.addEventListener("pointerleave", () => clearFocus());
@@ -239,7 +251,7 @@ function openPanel(id) {
   panelLink.href = item.page;
   panel.hidden = false;
 
-  document.querySelectorAll(".orbital-object").forEach((node) => {
+  objectNodes.forEach((node) => {
     node.classList.toggle("is-selected", node.dataset.id === id);
   });
 }
@@ -247,13 +259,13 @@ function openPanel(id) {
 function closePanel() {
   selectedObjectId = null;
   panel.hidden = true;
-  document.querySelectorAll(".orbital-object").forEach((node) => node.classList.remove("is-selected"));
+  objectNodes.forEach((node) => node.classList.remove("is-selected"));
 }
 
 function focusObject(id) {
   focusedObjectId = id;
   stage.classList.add("is-focusing");
-  document.querySelectorAll(".orbital-object").forEach((node) => {
+  objectNodes.forEach((node) => {
     const isFocused = node.dataset.id === id;
     node.classList.toggle("is-focused", isFocused);
     node.classList.toggle("is-dimmed", !isFocused);
@@ -267,7 +279,7 @@ function clearFocus() {
 
   focusedObjectId = null;
   stage.classList.remove("is-focusing");
-  document.querySelectorAll(".orbital-object").forEach((node) => {
+  objectNodes.forEach((node) => {
     node.classList.remove("is-focused", "is-dimmed");
   });
 }
@@ -292,7 +304,38 @@ function getStageScale() {
   if (width < 760) {
     return 0.48;
   }
+  if (width < 980) {
+    return 0.68;
+  }
+  if (width < 1040) {
+    return 0.78;
+  }
+  if (width < 1180) {
+    return 0.82;
+  }
   return 1;
+}
+
+function getFixedScale() {
+  const width = stage.clientWidth;
+  if (width < 520) {
+    return 0.62;
+  }
+  if (width < 760) {
+    return 0.78;
+  }
+  return 1;
+}
+
+function getFixedObjectPosition(item) {
+  const scale = getFixedScale();
+  return {
+    x: item.fixedX * stage.clientWidth * 0.5,
+    y: item.fixedY * stage.clientHeight * 0.5,
+    scale: item.fixedScale * scale,
+    opacity: item.fixedOpacity,
+    zIndex: item.fixedZIndex,
+  };
 }
 
 function getScenePoint(clientX, clientY) {
@@ -312,7 +355,7 @@ function clearHoldTimer() {
 }
 
 function getObjectNode(id) {
-  return document.querySelector(`.orbital-object[data-id="${id}"]`);
+  return objectNodeMap.get(id);
 }
 
 function getPointerObjectId(event) {
@@ -329,7 +372,7 @@ function getPointerObjectId(event) {
   let nearestId = null;
   let nearestDistance = Infinity;
 
-  document.querySelectorAll(".orbital-object").forEach((node) => {
+  objectNodes.forEach((node) => {
     const rect = node.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
@@ -428,18 +471,33 @@ function renderObjects(time = 0) {
 
   const stageScale = getStageScale() * zoom;
   const tilt = 0.26;
-  const nodes = document.querySelectorAll(".orbital-object");
 
   allObjects.forEach((item, index) => {
-    const node = nodes[index];
-    const angle = item.angle + autoAngle + rotation + orbitTime * item.speed;
-    const radius = item.orbitRadius * stageScale;
-    const x = Math.cos(angle) * radius;
-    const z = Math.sin(angle);
-    const y = Math.sin(angle) * radius * tilt;
-    const depthScale = 0.66 + (z + 1) * 0.18;
-    const opacity = 0.58 + (z + 1) * 0.19;
-    const zIndex = Math.round(80 + (z + 1) * 110);
+    const node = objectNodes[index];
+    let x;
+    let y;
+    let depthScale;
+    let opacity;
+    let zIndex;
+
+    if (item.fixed) {
+      const fixedPosition = getFixedObjectPosition(item);
+      x = fixedPosition.x;
+      y = fixedPosition.y;
+      depthScale = fixedPosition.scale;
+      opacity = fixedPosition.opacity;
+      zIndex = fixedPosition.zIndex;
+    } else {
+      const angle = item.angle + autoAngle + rotation + orbitTime * item.speed;
+      const radius = item.orbitRadius * stageScale;
+      const z = Math.sin(angle);
+      x = Math.cos(angle) * radius;
+      y = z * radius * tilt;
+      depthScale = 0.66 + (z + 1) * 0.18;
+      opacity = 0.68 + (z + 1) * 0.14;
+      zIndex = Math.round(92 + (z + 1) * 96);
+    }
+
     let renderX = x;
     let renderY = y;
     let renderScale = depthScale;
@@ -514,33 +572,43 @@ function renderObjects(time = 0) {
 }
 
 function setZoom(nextZoom) {
-  zoom = clamp(nextZoom, 0.76, 1.14);
+  zoom = clamp(nextZoom, 0.82, 1.04);
 }
 
 function setupStars() {
   const width = window.innerWidth;
   const height = window.innerHeight;
-  const count = Math.floor(Math.min(980, Math.max(320, width * height * 0.0005)));
+  const count = Math.floor(Math.min(520, Math.max(180, width * height * 0.00028)));
 
   stars = Array.from({ length: count }, (_, index) => ({
     x: (Math.sin(index * 92.173) * 0.5 + 0.5) * width,
     y: (Math.sin(index * 38.519 + 8) * 0.5 + 0.5) * height,
     radius: 0.38 + ((index * 17) % 13) * 0.09,
     phase: index * 0.77,
-    glow: index % 6 === 0,
-    sparkle: index % 23 === 0,
+    glow: index % 8 === 0,
+    sparkle: index % 31 === 0,
   }));
 }
 
 function drawStarfield(time = 0) {
   const context = starfield.getContext("2d");
-  const pixelRatio = window.devicePixelRatio || 1;
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
   const width = window.innerWidth;
   const height = window.innerHeight;
+  const canvasWidth = Math.floor(width * pixelRatio);
+  const canvasHeight = Math.floor(height * pixelRatio);
+  const needsResize = starfield.width !== canvasWidth || starfield.height !== canvasHeight;
 
-  if (starfield.width !== Math.floor(width * pixelRatio) || starfield.height !== Math.floor(height * pixelRatio)) {
-    starfield.width = Math.floor(width * pixelRatio);
-    starfield.height = Math.floor(height * pixelRatio);
+  if (!needsResize && time - lastStarDrawTime < STARFIELD_FRAME_INTERVAL) {
+    requestAnimationFrame(drawStarfield);
+    return;
+  }
+
+  lastStarDrawTime = time;
+
+  if (needsResize) {
+    starfield.width = canvasWidth;
+    starfield.height = canvasHeight;
     starfield.style.width = `${width}px`;
     starfield.style.height = `${height}px`;
     setupStars();
@@ -585,7 +653,7 @@ function handlePointerDown(event) {
   isDragging = true;
   didDrag = false;
   pointerStartObjectId = getPointerObjectId(event);
-  objectPressCandidateId = pointerStartObjectId;
+  objectPressCandidateId = findObject(pointerStartObjectId)?.fixed ? null : pointerStartObjectId;
   dragStartX = event.clientX;
   dragStartY = event.clientY;
   dragStartRotation = rotation;
@@ -679,12 +747,14 @@ function bindEvents() {
     }
   });
 
-  window.addEventListener("resize", setupStars);
+  window.addEventListener("resize", () => {
+    lastStarDrawTime = -Infinity;
+    setupStars();
+  });
 }
 
 createObjects();
 bindEvents();
 setupStars();
-openPanel("beginner-guide");
 renderObjects(0);
 drawStarfield(0);

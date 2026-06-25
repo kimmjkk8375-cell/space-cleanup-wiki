@@ -210,23 +210,23 @@ main,
 }
 
 .ring-a {
-  width: 620px;
-  height: 620px;
+  width: 440px;
+  height: 440px;
 }
 
 .ring-b {
+  width: 720px;
+  height: 720px;
+}
+
+.ring-c {
   width: 980px;
   height: 980px;
 }
 
-.ring-c {
-  width: 1360px;
-  height: 1360px;
-}
-
 .ring-d {
-  width: 1900px;
-  height: 1900px;
+  width: 1120px;
+  height: 1120px;
   border-color: rgba(158, 205, 232, 0.075);
 }
 
@@ -402,7 +402,9 @@ main,
   background: transparent;
   cursor: pointer;
   transform-style: preserve-3d;
-  transition: filter 520ms ease, opacity 520ms ease;
+  transition: filter 360ms ease, opacity 360ms ease;
+  contain: layout paint;
+  will-change: transform, opacity;
 }
 
 .orbital-object.is-lifted {
@@ -416,7 +418,7 @@ main,
 }
 
 .orbital-object.is-dimmed {
-  filter: blur(3px) saturate(0.48) brightness(0.58);
+  filter: blur(1.5px) saturate(0.54) brightness(0.62);
 }
 
 .orbital-object.is-focused,
@@ -425,11 +427,11 @@ main,
 }
 
 .system-stage.is-focusing .orbital-object.is-dimmed {
-  filter: blur(3px) saturate(0.48) brightness(0.58);
+  filter: blur(1.5px) saturate(0.54) brightness(0.62);
 }
 
 .system-stage:has(.orbital-object:hover) .orbital-object:not(:hover) {
-  filter: blur(3px) saturate(0.48) brightness(0.58);
+  filter: blur(1.5px) saturate(0.54) brightness(0.62);
 }
 
 .system-stage:has(.orbital-object:hover) .orbital-object:hover {
@@ -981,23 +983,23 @@ main,
   }
 
   .ring-a {
-    width: 520px;
-    height: 520px;
+    width: 300px;
+    height: 300px;
   }
 
   .ring-b {
-    width: 800px;
-    height: 800px;
+    width: 450px;
+    height: 450px;
   }
 
   .ring-c {
-    width: 1080px;
-    height: 1080px;
+    width: 620px;
+    height: 620px;
   }
 
   .ring-d {
-    width: 1380px;
-    height: 1380px;
+    width: 760px;
+    height: 760px;
   }
 }
 
@@ -1036,23 +1038,23 @@ main,
   }
 
   .ring-a {
-    width: 330px;
-    height: 330px;
+    width: 180px;
+    height: 180px;
   }
 
   .ring-b {
-    width: 530px;
-    height: 530px;
+    width: 260px;
+    height: 260px;
   }
 
   .ring-c {
-    width: 740px;
-    height: 740px;
+    width: 340px;
+    height: 340px;
   }
 
   .ring-d {
-    width: 940px;
-    height: 940px;
+    width: 420px;
+    height: 420px;
   }
 
   .star-core {
