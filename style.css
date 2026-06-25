@@ -323,7 +323,7 @@ main,
   position: absolute;
   top: 50%;
   left: 50%;
-  z-index: 188;
+  z-index: 248;
   width: min(82vw, 460px);
   transform: translate(-50%, 58px);
   pointer-events: none;
@@ -430,6 +430,7 @@ main,
 .planet-body,
 .celestial-body {
   position: relative;
+  z-index: 2;
   display: block;
   width: 100%;
   height: 100%;
@@ -441,6 +442,22 @@ main,
     inset -16px -18px 24px rgba(0, 0, 0, 0.36),
     inset 7px 8px 15px rgba(255, 255, 255, 0.16);
   transition: transform 520ms ease, box-shadow 520ms ease;
+}
+
+.surface-drift {
+  position: absolute;
+  inset: -16%;
+  z-index: 1;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 24% 36%, rgba(255, 255, 255, 0.18) 0 4%, transparent 5%),
+    radial-gradient(circle at 70% 66%, rgba(255, 255, 255, 0.12) 0 3%, transparent 4%),
+    linear-gradient(94deg, transparent 0 22%, rgba(255, 255, 255, 0.16) 27%, transparent 34% 58%, rgba(0, 0, 0, 0.16) 66%, transparent 76%);
+  mix-blend-mode: soft-light;
+  opacity: 0.56;
+  pointer-events: none;
+  animation: surface-drift var(--spin-duration, 64s) linear infinite;
+  animation-direction: var(--spin-direction, normal);
 }
 
 .orbital-object.is-focused .planet-body,
@@ -476,12 +493,73 @@ main,
 
 .planet-body::after {
   inset: -18%;
+  z-index: 3;
   border-radius: 50%;
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent 26%, transparent 62%, rgba(0, 0, 0, 0.2)),
     radial-gradient(circle at 28% 34%, rgba(255, 255, 255, 0.14), transparent 24%);
   mix-blend-mode: soft-light;
   animation: planet-terminator-sweep var(--spin-duration, 64s) linear infinite;
+  animation-direction: var(--spin-direction, normal);
+}
+
+.planet-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(var(--ring-tilt, -14deg));
+}
+
+.planet-ring::before,
+.planet-ring::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  border-radius: inherit;
+}
+
+.planet-ring::before {
+  background:
+    radial-gradient(ellipse at center, transparent 0 43%, var(--ring-a) 45% 49%, rgba(255, 255, 255, 0.16) 50% 51%, var(--ring-b) 53% 57%, transparent 60%),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+  box-shadow: 0 0 18px rgba(165, 222, 255, 0.14);
+  opacity: 0.86;
+}
+
+.planet-ring::after {
+  background: radial-gradient(ellipse at center, transparent 0 49%, rgba(255, 255, 255, 0.22) 50% 53%, transparent 58%);
+  clip-path: inset(50% 0 0 0);
+  opacity: 0.72;
+}
+
+.moon-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 4;
+  border: 1px solid rgba(175, 217, 238, 0.1);
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(var(--moon-angle, 0deg));
+  animation: moon-orbit var(--moon-duration, 30s) linear infinite;
+  animation-direction: var(--moon-direction, normal);
+}
+
+.moon-body {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--moon-size, 4px) * -0.45);
+  width: var(--moon-size, 4px);
+  height: var(--moon-size, 4px);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.8), transparent 32%),
+    var(--moon-color, #d8eaff);
+  box-shadow: 0 0 9px rgba(205, 235, 255, 0.22);
+  transform: translateY(-50%);
 }
 
 @keyframes planet-terminator-sweep {
@@ -491,6 +569,26 @@ main,
 
   to {
     transform: translateX(16%) rotate(360deg);
+  }
+}
+
+@keyframes surface-drift {
+  from {
+    transform: rotate(var(--axial-tilt, 0deg));
+  }
+
+  to {
+    transform: rotate(calc(var(--axial-tilt, 0deg) + 360deg));
+  }
+}
+
+@keyframes moon-orbit {
+  from {
+    transform: translate(-50%, -50%) rotate(var(--moon-angle, 0deg));
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(calc(var(--moon-angle, 0deg) + 360deg));
   }
 }
 
@@ -1072,7 +1170,9 @@ main,
   }
 
   .planet-body,
-  .planet-body::after {
+  .planet-body::after,
+  .surface-drift,
+  .moon-orbit {
     animation: none !important;
   }
 }

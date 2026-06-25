@@ -9,9 +9,17 @@ const planetData = [
     colors: ["#f3c9d8", "#a9e8ff", "#fff0a8"],
     orbitRadius: 220,
     size: 34,
-    spinDuration: 52,
-    speed: 0.000027,
+    spinDuration: 48,
+    spinDirection: 1,
+    axialTilt: -12,
+    speed: 0.00004,
     angle: 0.2,
+    ring: {
+      width: 2.68,
+      height: 0.58,
+      tilt: -15,
+      colors: ["rgba(255, 236, 190, 0.34)", "rgba(130, 214, 255, 0.2)"],
+    },
   },
   {
     id: "world",
@@ -24,8 +32,20 @@ const planetData = [
     orbitRadius: 285,
     size: 44,
     spinDuration: 68,
-    speed: 0.000022,
+    spinDirection: 1,
+    axialTilt: 8,
+    speed: 0.000026,
     angle: 1.18,
+    moons: [
+      {
+        orbit: 37,
+        size: 5,
+        duration: 24,
+        angle: 35,
+        color: "#d8c0a0",
+        direction: 1,
+      },
+    ],
   },
   {
     id: "orbit-zero",
@@ -38,8 +58,34 @@ const planetData = [
     orbitRadius: 440,
     size: 40,
     spinDuration: 74,
-    speed: 0.000017,
+    spinDirection: -1,
+    axialTilt: -24,
+    speed: 0.000014,
     angle: 2.08,
+    ring: {
+      width: 2.28,
+      height: 0.48,
+      tilt: 18,
+      colors: ["rgba(125, 246, 255, 0.26)", "rgba(116, 132, 150, 0.18)"],
+    },
+    moons: [
+      {
+        orbit: 34,
+        size: 4,
+        duration: 31,
+        angle: 15,
+        color: "#c6f8ff",
+        direction: -1,
+      },
+      {
+        orbit: 48,
+        size: 3,
+        duration: 43,
+        angle: 156,
+        color: "#92a6ad",
+        direction: 1,
+      },
+    ],
   },
   {
     id: "area-ai",
@@ -52,8 +98,20 @@ const planetData = [
     orbitRadius: 360,
     size: 38,
     spinDuration: 58,
+    spinDirection: 1,
+    axialTilt: 14,
     speed: 0.00002,
     angle: 3.05,
+    moons: [
+      {
+        orbit: 35,
+        size: 4,
+        duration: 27,
+        angle: 260,
+        color: "#dffcff",
+        direction: 1,
+      },
+    ],
   },
   {
     id: "items",
@@ -66,8 +124,16 @@ const planetData = [
     orbitRadius: 485,
     size: 33,
     spinDuration: 63,
-    speed: 0.000012,
+    spinDirection: 1,
+    axialTilt: -7,
+    speed: 0.00001,
     angle: 4.2,
+    ring: {
+      width: 2.42,
+      height: 0.54,
+      tilt: -26,
+      colors: ["rgba(244, 226, 166, 0.3)", "rgba(184, 134, 72, 0.18)"],
+    },
   },
   {
     id: "monsters",
@@ -80,8 +146,20 @@ const planetData = [
     orbitRadius: 525,
     size: 42,
     spinDuration: 71,
-    speed: 0.000014,
+    spinDirection: -1,
+    axialTilt: 22,
+    speed: 0.0000075,
     angle: 4.86,
+    moons: [
+      {
+        orbit: 39,
+        size: 5,
+        duration: 35,
+        angle: 310,
+        color: "#7d6470",
+        direction: -1,
+      },
+    ],
   },
   {
     id: "updates",
@@ -94,8 +172,16 @@ const planetData = [
     orbitRadius: 560,
     size: 32,
     spinDuration: 78,
-    speed: 0.000011,
+    spinDirection: 1,
+    axialTilt: 4,
+    speed: 0.0000055,
     angle: 4.95,
+    ring: {
+      width: 2.5,
+      height: 0.5,
+      tilt: 12,
+      colors: ["rgba(220, 255, 238, 0.32)", "rgba(158, 212, 255, 0.16)"],
+    },
   },
 ];
 
@@ -142,7 +228,7 @@ const celestialData = [
     colors: ["#e6fbff", "#8bd7ff", "#d2b6ff"],
     orbitRadius: 575,
     size: 34,
-    speed: 0.000008,
+    speed: 0.000004,
     angle: 0.98,
   },
 ];
@@ -203,13 +289,53 @@ function createObjects() {
     button.style.setProperty("--object-b", item.colors[1]);
     button.style.setProperty("--object-c", item.colors[2]);
     button.style.setProperty("--spin-duration", `${item.spinDuration || 64}s`);
+    button.style.setProperty("--spin-direction", item.spinDirection < 0 ? "reverse" : "normal");
+    button.style.setProperty("--axial-tilt", `${item.axialTilt || 0}deg`);
     button.style.width = `${item.size}px`;
     button.style.height = `${item.size}px`;
     button.setAttribute("aria-label", `Open ${item.name} information`);
 
+    if (item.ring) {
+      const ring = document.createElement("span");
+      ring.className = "planet-ring";
+      ring.style.width = `${item.size * item.ring.width}px`;
+      ring.style.height = `${item.size * item.ring.height}px`;
+      ring.style.setProperty("--ring-tilt", `${item.ring.tilt}deg`);
+      ring.style.setProperty("--ring-a", item.ring.colors[0]);
+      ring.style.setProperty("--ring-b", item.ring.colors[1]);
+      ring.setAttribute("aria-hidden", "true");
+      button.appendChild(ring);
+    }
+
     const body = document.createElement("span");
     body.className = celestialData.includes(item) ? "celestial-body" : "planet-body";
     body.setAttribute("aria-hidden", "true");
+
+    if (!celestialData.includes(item)) {
+      const surface = document.createElement("span");
+      surface.className = "surface-drift";
+      body.appendChild(surface);
+    }
+
+    if (item.moons) {
+      item.moons.forEach((moon) => {
+        const moonOrbit = document.createElement("span");
+        moonOrbit.className = "moon-orbit";
+        moonOrbit.style.width = `${moon.orbit * 2}px`;
+        moonOrbit.style.height = `${moon.orbit * 2}px`;
+        moonOrbit.style.setProperty("--moon-size", `${moon.size}px`);
+        moonOrbit.style.setProperty("--moon-duration", `${moon.duration}s`);
+        moonOrbit.style.setProperty("--moon-angle", `${moon.angle}deg`);
+        moonOrbit.style.setProperty("--moon-color", moon.color);
+        moonOrbit.style.setProperty("--moon-direction", moon.direction < 0 ? "reverse" : "normal");
+        moonOrbit.setAttribute("aria-hidden", "true");
+
+        const moonBody = document.createElement("span");
+        moonBody.className = "moon-body";
+        moonOrbit.appendChild(moonBody);
+        button.appendChild(moonOrbit);
+      });
+    }
 
     const label = document.createElement("span");
     label.className = "object-label";
@@ -515,7 +641,7 @@ function renderObjects(time = 0) {
 
   const dragCoolingDown = now - dragSettledAt < 1200;
   if (!prefersReducedMotion && !isDragging && !dragCoolingDown) {
-    autoAngle += delta * 0.000023;
+    autoAngle += delta * 0.000006;
     orbitTime += delta;
   }
 
