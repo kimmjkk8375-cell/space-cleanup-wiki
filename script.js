@@ -7,10 +7,10 @@ const planetData = [
     kind: "gas",
     category: "Wiki Planet",
     colors: ["#f3c9d8", "#a9e8ff", "#fff0a8"],
-    orbitRadius: 212,
+    orbitRadius: 300,
     size: 34,
     spinDuration: 52,
-    speed: 0.000032,
+    speed: 0.000027,
     angle: 0.2,
   },
   {
@@ -21,10 +21,10 @@ const planetData = [
     kind: "rock",
     category: "Wiki Planet",
     colors: ["#b68a69", "#695346", "#d8c0a0"],
-    orbitRadius: 288,
+    orbitRadius: 460,
     size: 44,
     spinDuration: 68,
-    speed: 0.000026,
+    speed: 0.000022,
     angle: 1.18,
   },
   {
@@ -35,10 +35,10 @@ const planetData = [
     kind: "machine",
     category: "Wiki Planet",
     colors: ["#7fdcc9", "#4b6570", "#d8ffff"],
-    orbitRadius: 358,
+    orbitRadius: 760,
     size: 40,
     spinDuration: 74,
-    speed: 0.000023,
+    speed: 0.000017,
     angle: 2.08,
   },
   {
@@ -49,10 +49,10 @@ const planetData = [
     kind: "storm",
     category: "Wiki Planet",
     colors: ["#7df6ff", "#8b8cff", "#e9faff"],
-    orbitRadius: 286,
+    orbitRadius: 620,
     size: 38,
     spinDuration: 58,
-    speed: 0.000028,
+    speed: 0.00002,
     angle: 3.05,
   },
   {
@@ -63,11 +63,11 @@ const planetData = [
     kind: "desert",
     category: "Wiki Planet",
     colors: ["#d8c27a", "#b88648", "#f4e2a6"],
-    orbitRadius: 424,
+    orbitRadius: 1040,
     size: 33,
     spinDuration: 63,
-    speed: 0.000019,
-    angle: 3.92,
+    speed: 0.000012,
+    angle: 4.2,
   },
   {
     id: "monsters",
@@ -77,10 +77,10 @@ const planetData = [
     kind: "cracked",
     category: "Wiki Planet",
     colors: ["#c77d86", "#432c3e", "#ffb2a8"],
-    orbitRadius: 382,
+    orbitRadius: 900,
     size: 42,
     spinDuration: 71,
-    speed: 0.000022,
+    speed: 0.000014,
     angle: 4.86,
   },
   {
@@ -91,11 +91,11 @@ const planetData = [
     kind: "ice",
     category: "Wiki Planet",
     colors: ["#bdf7d0", "#9ed4ff", "#ffffff"],
-    orbitRadius: 488,
+    orbitRadius: 1160,
     size: 32,
     spinDuration: 78,
-    speed: 0.000017,
-    angle: 5.72,
+    speed: 0.000011,
+    angle: 4.95,
   },
 ];
 
@@ -108,10 +108,10 @@ const celestialData = [
     kind: "black-hole",
     category: "Deep-Space Object",
     colors: ["#000000", "#7aa3ff", "#e8f8ff"],
-    orbitRadius: 544,
-    size: 82,
-    speed: 0.000011,
-    angle: 2.74,
+    orbitRadius: 1080,
+    size: 104,
+    speed: 0.000007,
+    angle: 2.18,
   },
   {
     id: "quasar",
@@ -121,10 +121,10 @@ const celestialData = [
     kind: "quasar",
     category: "Deep-Space Object",
     colors: ["#c9f5ff", "#5a7cff", "#fff6bd"],
-    orbitRadius: 586,
-    size: 74,
-    speed: 0.000009,
-    angle: 0.96,
+    orbitRadius: 1180,
+    size: 96,
+    speed: 0.000006,
+    angle: 5.18,
   },
   {
     id: "relic-comet",
@@ -134,10 +134,10 @@ const celestialData = [
     kind: "comet",
     category: "Deep-Space Object",
     colors: ["#e6fbff", "#8bd7ff", "#d2b6ff"],
-    orbitRadius: 512,
-    size: 30,
-    speed: 0.000014,
-    angle: 5.28,
+    orbitRadius: 1080,
+    size: 34,
+    speed: 0.000009,
+    angle: 0.98,
   },
 ];
 
@@ -197,6 +197,8 @@ function createObjects() {
 
     button.addEventListener("pointerenter", () => focusObject(item.id));
     button.addEventListener("pointerleave", () => clearFocus());
+    button.addEventListener("mouseenter", () => focusObject(item.id));
+    button.addEventListener("mouseleave", () => clearFocus());
     button.addEventListener("focus", () => focusObject(item.id));
     button.addEventListener("blur", () => clearFocus());
 
@@ -261,10 +263,10 @@ function clamp(value, min, max) {
 function getStageScale() {
   const width = stage.clientWidth;
   if (width < 520) {
-    return 0.56;
+    return 0.3;
   }
   if (width < 760) {
-    return 0.76;
+    return 0.48;
   }
   return 1;
 }
@@ -280,7 +282,7 @@ function renderObjects(time = 0) {
   }
 
   const stageScale = getStageScale() * zoom;
-  const tilt = 0.34;
+  const tilt = 0.26;
   const nodes = document.querySelectorAll(".orbital-object");
 
   allObjects.forEach((item, index) => {
@@ -290,11 +292,11 @@ function renderObjects(time = 0) {
     const x = Math.cos(angle) * radius;
     const z = Math.sin(angle);
     const y = Math.sin(angle) * radius * tilt;
-    const depthScale = 0.7 + (z + 1) * 0.16;
-    const opacity = 0.7 + (z + 1) * 0.13;
+    const depthScale = 0.66 + (z + 1) * 0.18;
+    const opacity = 0.58 + (z + 1) * 0.19;
 
     node.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${depthScale})`;
-    node.style.zIndex = String(Math.round((z + 1) * 100));
+    node.style.zIndex = String(Math.round(80 + (z + 1) * 110));
     node.style.opacity = String(opacity);
   });
 
@@ -445,5 +447,5 @@ createObjects();
 bindEvents();
 setupStars();
 openPanel("beginner-guide");
-requestAnimationFrame(renderObjects);
-requestAnimationFrame(drawStarfield);
+renderObjects(0);
+drawStarfield(0);
