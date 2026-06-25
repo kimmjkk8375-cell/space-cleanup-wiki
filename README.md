@@ -1,6 +1,6 @@
-# Space Cleanup Wiki
+# JUNK COLLECTORS Official Wiki
 
-Static wiki site for the space cleanup Roblox game.
+Static GitHub Pages wiki site for JUNK COLLECTORS.
 
 ## Local Preview
 
