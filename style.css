@@ -38,6 +38,10 @@ body.is-dragging {
   user-select: none;
 }
 
+body.is-object-dragging {
+  cursor: grabbing;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -401,6 +405,11 @@ main,
   transition: filter 520ms ease, opacity 520ms ease;
 }
 
+.orbital-object.is-lifted {
+  cursor: grabbing;
+  filter: brightness(1.22) saturate(1.16);
+}
+
 .orbital-object:focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 9px;
@@ -446,13 +455,24 @@ main,
 
 .orbital-object.is-focused .planet-body,
 .orbital-object.is-selected .planet-body,
+.orbital-object.is-lifted .planet-body,
 .orbital-object.is-focused .celestial-body,
-.orbital-object.is-selected .celestial-body {
+.orbital-object.is-selected .celestial-body,
+.orbital-object.is-lifted .celestial-body {
   transform: scale(1.14);
   box-shadow:
     0 0 34px rgba(210, 240, 255, 0.32),
     inset -16px -18px 24px rgba(0, 0, 0, 0.28),
     inset 7px 8px 15px rgba(255, 255, 255, 0.2);
+}
+
+.orbital-object.is-lifted .planet-body,
+.orbital-object.is-lifted .celestial-body {
+  box-shadow:
+    0 0 28px rgba(215, 245, 255, 0.42),
+    0 16px 44px rgba(95, 180, 230, 0.18),
+    inset -16px -18px 24px rgba(0, 0, 0, 0.26),
+    inset 7px 8px 15px rgba(255, 255, 255, 0.24);
 }
 
 .planet-body::before,
@@ -723,6 +743,7 @@ main,
 
 .orbital-object.is-focused .object-label,
 .orbital-object.is-selected .object-label,
+.orbital-object.is-lifted .object-label,
 .orbital-object:focus-visible .object-label,
 .orbital-object:hover .object-label {
   opacity: 1;
@@ -1052,7 +1073,7 @@ main,
     font-size: 10px;
   }
 
-  .orbital-object.is-selected:not(.is-focused):not(:hover) .object-label {
+  .orbital-object.is-selected:not(.is-focused):not(:hover):not(.is-lifted) .object-label {
     opacity: 0;
   }
 

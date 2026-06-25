@@ -153,6 +153,10 @@ const panelDescription = document.querySelector("#panel-description");
 const panelLink = document.querySelector("#panel-link");
 const panelClose = document.querySelector(".panel-close");
 const starfield = document.querySelector("#starfield");
+const OBJECT_HOLD_DELAY = 320;
+const OBJECT_HOLD_MOVE_CANCEL = 8;
+const OBJECT_RETURN_DELAY = 1000;
+const OBJECT_RETURN_DURATION = 760;
 
 let rotation = 0;
 let zoom = 1;
@@ -160,6 +164,7 @@ let autoAngle = 0;
 let orbitTime = 0;
 let lastTime = 0;
 let dragStartX = 0;
+let dragStartY = 0;
 let dragStartRotation = 0;
 let isDragging = false;
 let didDrag = false;
@@ -168,6 +173,13 @@ let dragSettledAt = 0;
 let selectedObjectId = null;
 let focusedObjectId = null;
 let stars = [];
+let holdTimer = null;
+let objectPressCandidateId = null;
+let objectDragId = null;
+let objectDragOffsetX = 0;
+let objectDragOffsetY = 0;
+const objectPositions = new Map();
+const objectOverrides = new Map();
 
 function createObjects() {
   allObjects.forEach((item) => {
@@ -249,6 +261,10 @@ function focusObject(id) {
 }
 
 function clearFocus() {
+  if (objectDragId) {
+    return;
+  }
+
   focusedObjectId = null;
   stage.classList.remove("is-focusing");
   document.querySelectorAll(".orbital-object").forEach((node) => {
@@ -258,6 +274,14 @@ function clearFocus() {
 
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
+}
+
+function easeOutCubic(value) {
+  return 1 - Math.pow(1 - value, 3);
+}
+
+function lerp(start, end, amount) {
+  return start + (end - start) * amount;
 }
 
 function getStageScale() {
@@ -271,11 +295,132 @@ function getStageScale() {
   return 1;
 }
 
+function getScenePoint(clientX, clientY) {
+  const rect = stage.getBoundingClientRect();
+  return {
+    x: clientX - (rect.left + rect.width / 2),
+    y: clientY - (rect.top + rect.height / 2),
+  };
+}
+
+function clearHoldTimer() {
+  if (holdTimer) {
+    window.clearTimeout(holdTimer);
+    holdTimer = null;
+  }
+  objectPressCandidateId = null;
+}
+
+function getObjectNode(id) {
+  return document.querySelector(`.orbital-object[data-id="${id}"]`);
+}
+
+function getPointerObjectId(event) {
+  const directObject = event.target.closest(".orbital-object");
+  if (directObject) {
+    return directObject.dataset.id;
+  }
+
+  const hitObject = document.elementFromPoint(event.clientX, event.clientY)?.closest(".orbital-object");
+  if (hitObject) {
+    return hitObject.dataset.id;
+  }
+
+  let nearestId = null;
+  let nearestDistance = Infinity;
+
+  document.querySelectorAll(".orbital-object").forEach((node) => {
+    const rect = node.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY);
+    const hitRadius = Math.max(rect.width, rect.height) / 2 + 18;
+
+    if (distance < hitRadius && distance < nearestDistance) {
+      nearestId = node.dataset.id;
+      nearestDistance = distance;
+    }
+  });
+
+  return nearestId;
+}
+
+function beginObjectDrag(id, point) {
+  const node = getObjectNode(id);
+  const current = objectPositions.get(id);
+  if (!node || !current || !isDragging) {
+    return;
+  }
+
+  clearHoldTimer();
+  objectDragId = id;
+  didDrag = true;
+
+  const scenePoint = getScenePoint(point.clientX, point.clientY);
+  objectDragOffsetX = current.x - scenePoint.x;
+  objectDragOffsetY = current.y - scenePoint.y;
+
+  objectOverrides.set(id, {
+    mode: "dragging",
+    x: current.x,
+    y: current.y,
+    scale: current.scale * 1.2,
+    opacity: 1,
+    zIndex: 460,
+  });
+
+  node.classList.add("is-lifted", "is-object-dragging");
+  document.body.classList.add("is-object-dragging");
+  focusObject(id);
+}
+
+function updateObjectDrag(point) {
+  if (!objectDragId) {
+    return;
+  }
+
+  const scenePoint = getScenePoint(point.clientX, point.clientY);
+  const current = objectOverrides.get(objectDragId) || objectPositions.get(objectDragId);
+  objectOverrides.set(objectDragId, {
+    ...current,
+    mode: "dragging",
+    x: scenePoint.x + objectDragOffsetX,
+    y: scenePoint.y + objectDragOffsetY,
+    scale: current.scale,
+    opacity: 1,
+    zIndex: 460,
+  });
+}
+
+function finishObjectDrag() {
+  if (!objectDragId) {
+    return;
+  }
+
+  const node = getObjectNode(objectDragId);
+  const current = objectOverrides.get(objectDragId) || objectPositions.get(objectDragId);
+  const now = performance.now();
+
+  if (current) {
+    objectOverrides.set(objectDragId, {
+      ...current,
+      mode: "released",
+      releaseAt: now,
+    });
+  }
+
+  node?.classList.remove("is-object-dragging");
+  document.body.classList.remove("is-object-dragging");
+  dragSettledAt = now;
+  objectDragId = null;
+}
+
 function renderObjects(time = 0) {
   const delta = lastTime ? time - lastTime : 16;
   lastTime = time;
+  const now = performance.now();
 
-  const dragCoolingDown = performance.now() - dragSettledAt < 1200;
+  const dragCoolingDown = now - dragSettledAt < 1200;
   if (!prefersReducedMotion && !isDragging && !dragCoolingDown) {
     autoAngle += delta * 0.000023;
     orbitTime += delta;
@@ -294,10 +439,75 @@ function renderObjects(time = 0) {
     const y = Math.sin(angle) * radius * tilt;
     const depthScale = 0.66 + (z + 1) * 0.18;
     const opacity = 0.58 + (z + 1) * 0.19;
+    const zIndex = Math.round(80 + (z + 1) * 110);
+    let renderX = x;
+    let renderY = y;
+    let renderScale = depthScale;
+    let renderOpacity = opacity;
+    let renderZIndex = zIndex;
+    let override = objectOverrides.get(item.id);
 
-    node.style.transform = `translate(-50%, -50%) translate3d(${x}px, ${y}px, 0) scale(${depthScale})`;
-    node.style.zIndex = String(Math.round(80 + (z + 1) * 110));
-    node.style.opacity = String(opacity);
+    if (override?.mode === "released" && now - override.releaseAt >= OBJECT_RETURN_DELAY) {
+      override = {
+        ...override,
+        mode: "returning",
+        returnStartAt: now,
+        fromX: override.x,
+        fromY: override.y,
+        fromScale: override.scale,
+        fromOpacity: override.opacity,
+      };
+      objectOverrides.set(item.id, override);
+      node.classList.add("is-returning");
+    }
+
+    if (override?.mode === "dragging" || override?.mode === "released") {
+      renderX = override.x;
+      renderY = override.y;
+      renderScale = override.scale;
+      renderOpacity = override.opacity;
+      renderZIndex = override.zIndex;
+    }
+
+    if (override?.mode === "returning") {
+      const progress = clamp((now - override.returnStartAt) / OBJECT_RETURN_DURATION, 0, 1);
+      const eased = easeOutCubic(progress);
+      renderX = lerp(override.fromX, x, eased);
+      renderY = lerp(override.fromY, y, eased);
+      renderScale = lerp(override.fromScale, depthScale, eased);
+      renderOpacity = lerp(override.fromOpacity, opacity, eased);
+      renderZIndex = Math.round(lerp(override.zIndex, zIndex, eased));
+
+      if (progress >= 1) {
+        objectOverrides.delete(item.id);
+        node.classList.remove("is-lifted", "is-returning");
+        if (focusedObjectId === item.id) {
+          clearFocus();
+        }
+        renderX = x;
+        renderY = y;
+        renderScale = depthScale;
+        renderOpacity = opacity;
+        renderZIndex = zIndex;
+      }
+    }
+
+    node.style.transform = `translate(-50%, -50%) translate3d(${renderX}px, ${renderY}px, 0) scale(${renderScale})`;
+    node.style.zIndex = String(renderZIndex);
+    node.style.opacity = String(renderOpacity);
+
+    objectPositions.set(item.id, {
+      x: renderX,
+      y: renderY,
+      scale: renderScale,
+      opacity: renderOpacity,
+      zIndex: renderZIndex,
+      orbitX: x,
+      orbitY: y,
+      orbitScale: depthScale,
+      orbitOpacity: opacity,
+      orbitZIndex: zIndex,
+    });
   });
 
   requestAnimationFrame(renderObjects);
@@ -374,11 +584,22 @@ function drawStarfield(time = 0) {
 function handlePointerDown(event) {
   isDragging = true;
   didDrag = false;
-  pointerStartObjectId = event.target.closest(".orbital-object")?.dataset.id || null;
+  pointerStartObjectId = getPointerObjectId(event);
+  objectPressCandidateId = pointerStartObjectId;
   dragStartX = event.clientX;
+  dragStartY = event.clientY;
   dragStartRotation = rotation;
   stage.setPointerCapture(event.pointerId);
   document.body.classList.add("is-dragging");
+
+  if (objectPressCandidateId) {
+    holdTimer = window.setTimeout(() => {
+      beginObjectDrag(objectPressCandidateId, {
+        clientX: dragStartX,
+        clientY: dragStartY,
+      });
+    }, OBJECT_HOLD_DELAY);
+  }
 }
 
 function handlePointerMove(event) {
@@ -386,7 +607,18 @@ function handlePointerMove(event) {
     return;
   }
 
+  if (objectDragId) {
+    didDrag = true;
+    updateObjectDrag(event);
+    return;
+  }
+
   const movement = event.clientX - dragStartX;
+  const totalMovement = Math.hypot(event.clientX - dragStartX, event.clientY - dragStartY);
+  if (objectPressCandidateId && totalMovement > OBJECT_HOLD_MOVE_CANCEL) {
+    clearHoldTimer();
+  }
+
   if (Math.abs(movement) > 4) {
     didDrag = true;
   }
@@ -399,9 +631,16 @@ function handlePointerUp(event) {
   }
 
   isDragging = false;
+  clearHoldTimer();
   dragSettledAt = performance.now();
   stage.releasePointerCapture(event.pointerId);
   document.body.classList.remove("is-dragging");
+
+  if (objectDragId) {
+    finishObjectDrag();
+    pointerStartObjectId = null;
+    return;
+  }
 
   if (!didDrag && pointerStartObjectId) {
     openPanel(pointerStartObjectId);
