@@ -7,8 +7,9 @@ const planetData = [
     kind: "gas",
     category: "Wiki Planet",
     colors: ["#f3c9d8", "#a9e8ff", "#fff0a8"],
-    orbitRadius: 178,
+    orbitRadius: 212,
     size: 34,
+    spinDuration: 52,
     speed: 0.000032,
     angle: 0.2,
   },
@@ -20,8 +21,9 @@ const planetData = [
     kind: "rock",
     category: "Wiki Planet",
     colors: ["#b68a69", "#695346", "#d8c0a0"],
-    orbitRadius: 238,
+    orbitRadius: 288,
     size: 44,
+    spinDuration: 68,
     speed: 0.000026,
     angle: 1.18,
   },
@@ -33,8 +35,9 @@ const planetData = [
     kind: "machine",
     category: "Wiki Planet",
     colors: ["#7fdcc9", "#4b6570", "#d8ffff"],
-    orbitRadius: 296,
+    orbitRadius: 358,
     size: 40,
+    spinDuration: 74,
     speed: 0.000023,
     angle: 2.08,
   },
@@ -46,8 +49,9 @@ const planetData = [
     kind: "storm",
     category: "Wiki Planet",
     colors: ["#7df6ff", "#8b8cff", "#e9faff"],
-    orbitRadius: 232,
+    orbitRadius: 286,
     size: 38,
+    spinDuration: 58,
     speed: 0.000028,
     angle: 3.05,
   },
@@ -59,8 +63,9 @@ const planetData = [
     kind: "desert",
     category: "Wiki Planet",
     colors: ["#d8c27a", "#b88648", "#f4e2a6"],
-    orbitRadius: 340,
+    orbitRadius: 424,
     size: 33,
+    spinDuration: 63,
     speed: 0.000019,
     angle: 3.92,
   },
@@ -72,8 +77,9 @@ const planetData = [
     kind: "cracked",
     category: "Wiki Planet",
     colors: ["#c77d86", "#432c3e", "#ffb2a8"],
-    orbitRadius: 304,
+    orbitRadius: 382,
     size: 42,
+    spinDuration: 71,
     speed: 0.000022,
     angle: 4.86,
   },
@@ -85,8 +91,9 @@ const planetData = [
     kind: "ice",
     category: "Wiki Planet",
     colors: ["#bdf7d0", "#9ed4ff", "#ffffff"],
-    orbitRadius: 374,
+    orbitRadius: 488,
     size: 32,
+    spinDuration: 78,
     speed: 0.000017,
     angle: 5.72,
   },
@@ -101,7 +108,7 @@ const celestialData = [
     kind: "black-hole",
     category: "Deep-Space Object",
     colors: ["#000000", "#7aa3ff", "#e8f8ff"],
-    orbitRadius: 430,
+    orbitRadius: 544,
     size: 82,
     speed: 0.000011,
     angle: 2.74,
@@ -114,7 +121,7 @@ const celestialData = [
     kind: "quasar",
     category: "Deep-Space Object",
     colors: ["#c9f5ff", "#5a7cff", "#fff6bd"],
-    orbitRadius: 462,
+    orbitRadius: 586,
     size: 74,
     speed: 0.000009,
     angle: 0.96,
@@ -127,7 +134,7 @@ const celestialData = [
     kind: "comet",
     category: "Deep-Space Object",
     colors: ["#e6fbff", "#8bd7ff", "#d2b6ff"],
-    orbitRadius: 404,
+    orbitRadius: 512,
     size: 30,
     speed: 0.000014,
     angle: 5.28,
@@ -172,6 +179,7 @@ function createObjects() {
     button.style.setProperty("--object-a", item.colors[0]);
     button.style.setProperty("--object-b", item.colors[1]);
     button.style.setProperty("--object-c", item.colors[2]);
+    button.style.setProperty("--spin-duration", `${item.spinDuration || 64}s`);
     button.style.width = `${item.size}px`;
     button.style.height = `${item.size}px`;
     button.setAttribute("aria-label", `Open ${item.name} information`);
@@ -300,14 +308,15 @@ function setZoom(nextZoom) {
 function setupStars() {
   const width = window.innerWidth;
   const height = window.innerHeight;
-  const count = Math.floor(Math.min(280, Math.max(110, width * height * 0.00015)));
+  const count = Math.floor(Math.min(980, Math.max(320, width * height * 0.0005)));
 
   stars = Array.from({ length: count }, (_, index) => ({
     x: (Math.sin(index * 92.173) * 0.5 + 0.5) * width,
     y: (Math.sin(index * 38.519 + 8) * 0.5 + 0.5) * height,
-    radius: 0.35 + ((index * 17) % 10) * 0.08,
+    radius: 0.38 + ((index * 17) % 13) * 0.09,
     phase: index * 0.77,
-    glow: index % 11 === 0,
+    glow: index % 6 === 0,
+    sparkle: index % 23 === 0,
   }));
 }
 
@@ -331,7 +340,7 @@ function drawStarfield(time = 0) {
   context.fillRect(0, 0, width, height);
 
   stars.forEach((star) => {
-    const twinkle = prefersReducedMotion ? 0.55 : 0.46 + Math.sin(time * 0.00042 + star.phase) * 0.18;
+    const twinkle = prefersReducedMotion ? 0.7 : 0.58 + Math.sin(time * 0.00038 + star.phase) * 0.22;
     context.beginPath();
     context.fillStyle = `rgba(222, 242, 255, ${twinkle})`;
     context.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
@@ -339,10 +348,21 @@ function drawStarfield(time = 0) {
 
     if (star.glow) {
       const glow = context.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.radius * 7);
-      glow.addColorStop(0, `rgba(170, 220, 255, ${twinkle * 0.18})`);
+      glow.addColorStop(0, `rgba(190, 232, 255, ${twinkle * 0.32})`);
       glow.addColorStop(1, "rgba(170, 220, 255, 0)");
       context.fillStyle = glow;
       context.fillRect(star.x - star.radius * 7, star.y - star.radius * 7, star.radius * 14, star.radius * 14);
+    }
+
+    if (star.sparkle) {
+      context.strokeStyle = `rgba(225, 246, 255, ${twinkle * 0.46})`;
+      context.lineWidth = 0.5;
+      context.beginPath();
+      context.moveTo(star.x - star.radius * 4, star.y);
+      context.lineTo(star.x + star.radius * 4, star.y);
+      context.moveTo(star.x, star.y - star.radius * 4);
+      context.lineTo(star.x, star.y + star.radius * 4);
+      context.stroke();
     }
   });
 

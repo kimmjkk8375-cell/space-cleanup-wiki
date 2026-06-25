@@ -50,9 +50,10 @@ button {
 .starfield {
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: 0;
   width: 100%;
   height: 100%;
+  pointer-events: none;
 }
 
 .site-header {
@@ -70,6 +71,12 @@ button {
   border-bottom: 1px solid rgba(198, 225, 244, 0.08);
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.2));
   backdrop-filter: blur(18px);
+}
+
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
 }
 
 .brand {
@@ -157,7 +164,7 @@ button {
 
 .system-stage {
   position: relative;
-  width: min(86vw, 1000px);
+  width: min(92vw, 1120px);
   height: min(74vh, 720px);
   min-height: 560px;
   border-radius: 50%;
@@ -198,18 +205,18 @@ button {
 }
 
 .ring-a {
-  width: 390px;
-  height: 390px;
+  width: 470px;
+  height: 470px;
 }
 
 .ring-b {
-  width: 570px;
-  height: 570px;
+  width: 720px;
+  height: 720px;
 }
 
 .ring-c {
-  width: 760px;
-  height: 760px;
+  width: 980px;
+  height: 980px;
 }
 
 .star-core {
@@ -218,21 +225,22 @@ button {
   left: 50%;
   z-index: 240;
   display: grid;
-  width: clamp(112px, 13vw, 152px);
-  height: clamp(112px, 13vw, 152px);
+  width: clamp(88px, 9vw, 116px);
+  height: clamp(88px, 9vw, 116px);
   place-items: center;
   padding: 18px;
   transform: translate(-50%, -50%);
-  border: 1px solid rgba(218, 250, 255, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 50%;
   color: var(--text);
   background:
-    radial-gradient(circle at 42% 36%, #ffffff 0%, #dffcff 18%, #8cdcf0 35%, rgba(28, 73, 105, 0.78) 58%, rgba(8, 18, 34, 0.84) 76%),
-    #102a42;
+    radial-gradient(circle at 42% 35%, #ffffff 0%, #ffffff 26%, #edfaff 46%, rgba(190, 227, 245, 0.9) 62%, rgba(94, 135, 160, 0.7) 78%),
+    #f7fdff;
   box-shadow:
-    0 0 28px rgba(196, 249, 255, 0.34),
-    0 0 74px rgba(100, 198, 230, 0.18),
-    inset 0 0 28px rgba(255, 255, 255, 0.18);
+    0 0 22px rgba(255, 255, 255, 0.5),
+    0 0 70px rgba(210, 242, 255, 0.3),
+    0 0 128px rgba(148, 205, 230, 0.13),
+    inset 0 0 18px rgba(255, 255, 255, 0.32);
   text-align: center;
 }
 
@@ -245,33 +253,34 @@ button {
 }
 
 .star-core::before {
-  inset: -16px;
-  background: radial-gradient(circle, rgba(140, 226, 255, 0.24), transparent 66%);
-  filter: blur(10px);
+  inset: -18px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.34), rgba(204, 238, 255, 0.16) 38%, transparent 68%);
+  filter: blur(11px);
   z-index: -1;
 }
 
 .star-core::after {
-  inset: -38px;
-  background: radial-gradient(circle, rgba(120, 210, 240, 0.12), transparent 72%);
-  filter: blur(22px);
+  inset: -46px;
+  background: radial-gradient(circle, rgba(230, 250, 255, 0.14), rgba(180, 225, 245, 0.065) 42%, transparent 74%);
+  filter: blur(28px);
   z-index: -2;
 }
 
 .star-title {
-  max-width: 118px;
-  font-size: clamp(15px, 1.7vw, 21px);
+  max-width: 88px;
+  font-size: clamp(11px, 1.05vw, 15px);
   font-weight: 900;
   line-height: 1.05;
   letter-spacing: 0;
-  text-shadow: 0 2px 14px rgba(3, 10, 20, 0.42);
+  color: #173044;
+  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.46);
   word-break: keep-all;
 }
 
 .star-subtitle {
-  margin-top: -18px;
-  color: rgba(243, 252, 255, 0.82);
-  font-size: clamp(8px, 0.9vw, 10px);
+  margin-top: -12px;
+  color: rgba(18, 43, 58, 0.78);
+  font-size: clamp(6px, 0.7vw, 8px);
   font-weight: 800;
   white-space: nowrap;
 }
@@ -323,6 +332,7 @@ button {
     0 0 24px rgba(170, 220, 255, 0.16),
     inset -16px -18px 24px rgba(0, 0, 0, 0.36),
     inset 7px 8px 15px rgba(255, 255, 255, 0.16);
+  animation: planet-texture-drift var(--spin-duration, 64s) linear infinite;
   transition: transform 520ms ease, box-shadow 520ms ease;
 }
 
@@ -344,6 +354,36 @@ button {
   position: absolute;
   content: "";
   pointer-events: none;
+}
+
+.planet-body::after {
+  inset: -18%;
+  border-radius: 50%;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent 26%, transparent 62%, rgba(0, 0, 0, 0.2)),
+    radial-gradient(circle at 28% 34%, rgba(255, 255, 255, 0.14), transparent 24%);
+  mix-blend-mode: soft-light;
+  animation: planet-terminator-sweep var(--spin-duration, 64s) linear infinite;
+}
+
+@keyframes planet-texture-drift {
+  from {
+    background-position: 0 0, 0 0, 0 0, 0 0;
+  }
+
+  to {
+    background-position: 160% 0, -120% 0, 80% 0, 0 0;
+  }
+}
+
+@keyframes planet-terminator-sweep {
+  from {
+    transform: translateX(-16%) rotate(0deg);
+  }
+
+  to {
+    transform: translateX(16%) rotate(360deg);
+  }
 }
 
 .gas .planet-body {
@@ -771,18 +811,18 @@ button {
   }
 
   .ring-a {
-    width: 330px;
-    height: 330px;
+    width: 410px;
+    height: 410px;
   }
 
   .ring-b {
-    width: 480px;
-    height: 480px;
+    width: 610px;
+    height: 610px;
   }
 
   .ring-c {
-    width: 640px;
-    height: 640px;
+    width: 820px;
+    height: 820px;
   }
 }
 
@@ -821,34 +861,34 @@ button {
   }
 
   .ring-a {
-    width: 230px;
-    height: 230px;
+    width: 280px;
+    height: 280px;
   }
 
   .ring-b {
-    width: 340px;
-    height: 340px;
+    width: 420px;
+    height: 420px;
   }
 
   .ring-c {
-    width: 450px;
-    height: 450px;
+    width: 560px;
+    height: 560px;
   }
 
   .star-core {
-    width: 104px;
-    height: 104px;
-    padding: 13px;
+    width: 78px;
+    height: 78px;
+    padding: 10px;
   }
 
   .star-title {
-    max-width: 82px;
-    font-size: 14px;
+    max-width: 62px;
+    font-size: 10px;
   }
 
   .star-subtitle {
-    margin-top: -16px;
-    font-size: 7px;
+    margin-top: -11px;
+    font-size: 5px;
   }
 
   .info-panel {
@@ -894,5 +934,10 @@ button {
   .star-core::before,
   .star-core::after {
     opacity: 0.22;
+  }
+
+  .planet-body,
+  .planet-body::after {
+    animation: none !important;
   }
 }
