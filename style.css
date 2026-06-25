@@ -571,8 +571,17 @@ main,
   z-index: 7;
   border: 1px dashed rgba(190, 232, 255, 0.16);
   border-radius: 50%;
+  opacity: 0.78;
   pointer-events: none;
-  transform: translate(-50%, -50%) rotate(var(--moon-angle, 0deg));
+  transform: translate(-50%, -50%) rotate(var(--moon-plane, 0deg)) scaleY(var(--moon-incline, 0.62));
+  transform-origin: 50% 50%;
+}
+
+.moon-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform-origin: 50% 50%;
   animation: moon-orbit var(--moon-duration, 30s) linear infinite;
   animation-direction: var(--moon-direction, normal);
 }
@@ -590,7 +599,7 @@ main,
   box-shadow:
     0 0 8px rgba(235, 250, 255, 0.54),
     0 0 14px rgba(130, 210, 255, 0.22);
-  transform: translateY(-50%);
+  transform: translateY(-50%) scaleY(var(--moon-counter-scale, 1));
 }
 
 @keyframes planet-terminator-sweep {
@@ -615,11 +624,11 @@ main,
 
 @keyframes moon-orbit {
   from {
-    transform: translate(-50%, -50%) rotate(var(--moon-angle, 0deg));
+    transform: rotate(var(--moon-angle, 0deg));
   }
 
   to {
-    transform: translate(-50%, -50%) rotate(calc(var(--moon-angle, 0deg) + 360deg));
+    transform: rotate(calc(var(--moon-angle, 0deg) + 360deg));
   }
 }
 
@@ -1290,7 +1299,7 @@ main,
   .planet-body,
   .planet-body::after,
   .surface-drift,
-  .moon-orbit {
+  .moon-track {
     animation-duration: 120s !important;
   }
 }

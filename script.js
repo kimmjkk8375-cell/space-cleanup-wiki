@@ -36,6 +36,8 @@ const planetData = [
         size: 9,
         duration: 9,
         angle: 24,
+        plane: -58,
+        inclination: 0.42,
         color: "#d8c0a0",
         direction: 1,
       },
@@ -44,6 +46,8 @@ const planetData = [
         size: 6,
         duration: 14,
         angle: 86,
+        plane: 18,
+        inclination: 0.72,
         color: "#b8a18e",
         direction: -1,
       },
@@ -52,6 +56,8 @@ const planetData = [
         size: 7,
         duration: 18,
         angle: 138,
+        plane: 76,
+        inclination: 0.38,
         color: "#e4d3bd",
         direction: 1,
       },
@@ -60,6 +66,8 @@ const planetData = [
         size: 5,
         duration: 23,
         angle: 196,
+        plane: -24,
+        inclination: 0.58,
         color: "#8f7a68",
         direction: 1,
       },
@@ -68,6 +76,8 @@ const planetData = [
         size: 8,
         duration: 29,
         angle: 244,
+        plane: 125,
+        inclination: 0.46,
         color: "#c9b095",
         direction: -1,
       },
@@ -76,6 +86,8 @@ const planetData = [
         size: 5,
         duration: 34,
         angle: 302,
+        plane: 42,
+        inclination: 0.82,
         color: "#eadbc8",
         direction: 1,
       },
@@ -84,6 +96,8 @@ const planetData = [
         size: 6,
         duration: 41,
         angle: 330,
+        plane: -86,
+        inclination: 0.32,
         color: "#9e8a76",
         direction: -1,
       },
@@ -92,6 +106,8 @@ const planetData = [
         size: 4,
         duration: 47,
         angle: 12,
+        plane: 8,
+        inclination: 0.64,
         color: "#f2e6d2",
         direction: 1,
       },
@@ -124,6 +140,8 @@ const planetData = [
         size: 10,
         duration: 13,
         angle: 15,
+        plane: 30,
+        inclination: 0.5,
         color: "#c6f8ff",
         direction: -1,
       },
@@ -132,6 +150,8 @@ const planetData = [
         size: 8,
         duration: 21,
         angle: 156,
+        plane: -66,
+        inclination: 0.72,
         color: "#92a6ad",
         direction: 1,
       },
@@ -158,6 +178,8 @@ const planetData = [
         size: 10,
         duration: 12,
         angle: 260,
+        plane: 96,
+        inclination: 0.36,
         color: "#dffcff",
         direction: 1,
       },
@@ -206,6 +228,8 @@ const planetData = [
         size: 11,
         duration: 15,
         angle: 310,
+        plane: -18,
+        inclination: 0.56,
         color: "#7d6470",
         direction: -1,
       },
@@ -367,19 +391,27 @@ function createObjects() {
     if (item.moons) {
       item.moons.forEach((moon) => {
         const moonOrbit = document.createElement("span");
+        const inclination = clamp(moon.inclination || 0.62, 0.28, 1);
         moonOrbit.className = "moon-orbit";
         moonOrbit.style.width = `${moon.orbit * 2}px`;
         moonOrbit.style.height = `${moon.orbit * 2}px`;
         moonOrbit.style.setProperty("--moon-size", `${moon.size}px`);
-        moonOrbit.style.setProperty("--moon-duration", `${moon.duration}s`);
-        moonOrbit.style.setProperty("--moon-angle", `${moon.angle}deg`);
+        moonOrbit.style.setProperty("--moon-plane", `${moon.plane || 0}deg`);
+        moonOrbit.style.setProperty("--moon-incline", String(inclination));
+        moonOrbit.style.setProperty("--moon-counter-scale", String(1 / inclination));
         moonOrbit.style.setProperty("--moon-color", moon.color);
-        moonOrbit.style.setProperty("--moon-direction", moon.direction < 0 ? "reverse" : "normal");
         moonOrbit.setAttribute("aria-hidden", "true");
+
+        const moonTrack = document.createElement("span");
+        moonTrack.className = "moon-track";
+        moonTrack.style.setProperty("--moon-duration", `${moon.duration}s`);
+        moonTrack.style.setProperty("--moon-angle", `${moon.angle}deg`);
+        moonTrack.style.setProperty("--moon-direction", moon.direction < 0 ? "reverse" : "normal");
 
         const moonBody = document.createElement("span");
         moonBody.className = "moon-body";
-        moonOrbit.appendChild(moonBody);
+        moonTrack.appendChild(moonBody);
+        moonOrbit.appendChild(moonTrack);
         button.appendChild(moonOrbit);
       });
     }
