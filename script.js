@@ -318,12 +318,15 @@ const OBJECT_HOLD_MOVE_CANCEL = 8;
 const OBJECT_RETURN_DELAY = 1000;
 const OBJECT_RETURN_DURATION = 760;
 const PANEL_TRANSITION_DURATION = 360;
+const ORBIT_FRAME_INTERVAL = 1000 / 45;
+const REDUCED_MOTION_FRAME_INTERVAL = 1000 / 20;
 
 let rotation = 0;
 let zoom = 1;
 let autoAngle = 0;
 let orbitTime = 0;
 let lastTime = 0;
+let lastRenderAt = 0;
 let dragStartX = 0;
 let dragStartY = 0;
 let dragStartRotation = 0;
@@ -336,7 +339,6 @@ let focusedObjectId = null;
 let stars = [];
 let lastFixedLayoutKey = "";
 let animationFrameId = null;
-let renderFallbackId = null;
 let resizeFrameId = null;
 let panelCloseTimer = null;
 let holdTimer = null;
@@ -346,6 +348,7 @@ let objectDragOffsetX = 0;
 let objectDragOffsetY = 0;
 const objectPositions = new Map();
 const objectOverrides = new Map();
+const objectStyleCache = new Map();
 const objectNodes = [];
 const objectNodeMap = new Map();
 
@@ -526,8 +529,36 @@ function lerp(start, end, amount) {
   return start + (end - start) * amount;
 }
 
-function getStageScale() {
-  const width = stage.clientWidth;
+function roundTo(value, precision) {
+  return Math.round(value * precision) / precision;
+}
+
+function applyObjectStyle(node, id, x, y, scale, opacity, zIndex) {
+  const transform = `translate(-50%, -50%) translate3d(${roundTo(x, 10)}px, ${roundTo(y, 10)}px, 0) scale(${roundTo(scale, 1000)})`;
+  const opacityValue = String(roundTo(opacity, 1000));
+  const zIndexValue = String(zIndex);
+  const previous = objectStyleCache.get(id);
+
+  if (!previous || previous.transform !== transform) {
+    node.style.transform = transform;
+  }
+
+  if (!previous || previous.opacity !== opacityValue) {
+    node.style.opacity = opacityValue;
+  }
+
+  if (!previous || previous.zIndex !== zIndexValue) {
+    node.style.zIndex = zIndexValue;
+  }
+
+  objectStyleCache.set(id, {
+    transform,
+    opacity: opacityValue,
+    zIndex: zIndexValue,
+  });
+}
+
+function getStageScale(width = stage.clientWidth) {
   if (width < 520) {
     return 0.3;
   }
@@ -546,8 +577,7 @@ function getStageScale() {
   return 1;
 }
 
-function getFixedScale() {
-  const width = stage.clientWidth;
+function getFixedScale(width = stage.clientWidth) {
   if (width < 520) {
     return 0.62;
   }
@@ -557,11 +587,11 @@ function getFixedScale() {
   return 1;
 }
 
-function getFixedObjectPosition(item) {
-  const scale = getFixedScale();
+function getFixedObjectPosition(item, width = stage.clientWidth, height = stage.clientHeight) {
+  const scale = getFixedScale(width);
   return {
-    x: item.fixedX * stage.clientWidth * 0.5,
-    y: item.fixedY * stage.clientHeight * 0.5,
+    x: item.fixedX * width * 0.5,
+    y: item.fixedY * height * 0.5,
     scale: item.fixedScale * scale,
     opacity: item.fixedOpacity,
     zIndex: item.fixedZIndex,
@@ -569,7 +599,10 @@ function getFixedObjectPosition(item) {
 }
 
 function layoutFixedObjects() {
-  const layoutKey = `${stage.clientWidth}:${stage.clientHeight}:${getFixedScale()}`;
+  const stageWidth = stage.clientWidth;
+  const stageHeight = stage.clientHeight;
+  const fixedScale = getFixedScale(stageWidth);
+  const layoutKey = `${stageWidth}:${stageHeight}:${fixedScale}`;
   if (layoutKey === lastFixedLayoutKey) {
     return;
   }
@@ -582,10 +615,16 @@ function layoutFixedObjects() {
     }
 
     const node = objectNodes[index];
-    const fixedPosition = getFixedObjectPosition(item);
-    node.style.transform = `translate(-50%, -50%) translate3d(${fixedPosition.x}px, ${fixedPosition.y}px, 0) scale(${fixedPosition.scale})`;
-    node.style.zIndex = String(fixedPosition.zIndex);
-    node.style.opacity = String(fixedPosition.opacity);
+    const fixedPosition = getFixedObjectPosition(item, stageWidth, stageHeight);
+    applyObjectStyle(
+      node,
+      item.id,
+      fixedPosition.x,
+      fixedPosition.y,
+      fixedPosition.scale,
+      fixedPosition.opacity,
+      fixedPosition.zIndex,
+    );
 
     objectPositions.set(item.id, {
       x: fixedPosition.x,
@@ -723,30 +762,35 @@ function finishObjectDrag() {
 }
 
 function scheduleRender() {
+  if (document.hidden) {
+    return;
+  }
+
   if (animationFrameId !== null) {
     return;
   }
 
   animationFrameId = requestAnimationFrame(renderObjects);
-  renderFallbackId = window.setTimeout(() => {
-    if (animationFrameId === null) {
-      return;
-    }
-
-    cancelAnimationFrame(animationFrameId);
-    animationFrameId = null;
-    renderObjects(performance.now());
-  }, 220);
 }
 
 function renderObjects(time = 0) {
   animationFrameId = null;
-  if (renderFallbackId !== null) {
-    window.clearTimeout(renderFallbackId);
-    renderFallbackId = null;
+
+  if (document.hidden) {
+    return;
   }
+
+  const needsHighRefresh = isDragging || Boolean(objectDragId) || objectOverrides.size > 0;
+  const frameInterval = prefersReducedMotion ? REDUCED_MOTION_FRAME_INTERVAL : ORBIT_FRAME_INTERVAL;
+
+  if (!needsHighRefresh && lastRenderAt && time - lastRenderAt < frameInterval) {
+    scheduleRender();
+    return;
+  }
+
   const delta = lastTime ? time - lastTime : 16;
   lastTime = time;
+  lastRenderAt = time;
   const now = performance.now();
 
   const dragCoolingDown = now - dragSettledAt < 1200;
@@ -756,7 +800,7 @@ function renderObjects(time = 0) {
     orbitTime += delta * motionScale;
   }
 
-  const stageScale = getStageScale() * zoom;
+  const stageScale = getStageScale(stage.clientWidth) * zoom;
   const tilt = 0.26;
   layoutFixedObjects();
 
@@ -827,9 +871,7 @@ function renderObjects(time = 0) {
       }
     }
 
-    node.style.transform = `translate(-50%, -50%) translate3d(${renderX}px, ${renderY}px, 0) scale(${renderScale})`;
-    node.style.zIndex = String(renderZIndex);
-    node.style.opacity = String(renderOpacity);
+    applyObjectStyle(node, item.id, renderX, renderY, renderScale, renderOpacity, renderZIndex);
 
     objectPositions.set(item.id, {
       x: renderX,
@@ -849,7 +891,12 @@ function renderObjects(time = 0) {
 }
 
 function setZoom(nextZoom) {
-  zoom = clamp(nextZoom, 0.82, 1.04);
+  const clampedZoom = clamp(nextZoom, 0.82, 1.04);
+  if (clampedZoom === zoom) {
+    return;
+  }
+
+  zoom = clampedZoom;
 }
 
 function setupStars() {
@@ -1038,11 +1085,18 @@ function bindEvents() {
 
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) {
+      if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+
       lastTime = 0;
+      lastRenderAt = 0;
       return;
     }
 
     lastTime = 0;
+    lastRenderAt = 0;
     lastFixedLayoutKey = "";
     drawStarfield();
     scheduleRender();

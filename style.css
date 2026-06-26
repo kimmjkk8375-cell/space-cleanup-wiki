@@ -57,6 +57,7 @@ button {
   z-index: 0;
   width: 100%;
   height: 100%;
+  contain: strict;
   pointer-events: none;
 }
 
@@ -175,12 +176,15 @@ main,
   cursor: grab;
   perspective: 1100px;
   touch-action: none;
+  contain: layout style;
 }
 
 .orbit-field {
   position: absolute;
   inset: 0;
+  contain: layout style;
   transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .orbit-field::before {
@@ -399,9 +403,10 @@ main,
   background: transparent;
   cursor: pointer;
   transform-style: preserve-3d;
-  transition: filter 360ms ease, opacity 360ms ease;
+  transition: filter 260ms ease, opacity 260ms ease;
   overflow: visible;
-  contain: layout;
+  backface-visibility: hidden;
+  contain: layout style;
   will-change: transform, opacity;
 }
 
@@ -416,7 +421,7 @@ main,
 }
 
 .orbital-object.is-dimmed {
-  filter: blur(1.5px) saturate(0.54) brightness(0.62);
+  filter: blur(0.9px) saturate(0.58) brightness(0.64);
 }
 
 .orbital-object.is-focused,
@@ -425,7 +430,7 @@ main,
 }
 
 .system-stage.is-focusing .orbital-object.is-dimmed {
-  filter: blur(1.5px) saturate(0.54) brightness(0.62);
+  filter: blur(0.9px) saturate(0.58) brightness(0.64);
 }
 
 .planet-body,
@@ -438,6 +443,8 @@ main,
   border: 1px solid rgba(240, 252, 255, 0.28);
   border-radius: 50%;
   overflow: hidden;
+  backface-visibility: hidden;
+  contain: layout paint style;
   box-shadow:
     0 0 24px rgba(170, 220, 255, 0.16),
     inset -16px -18px 24px rgba(0, 0, 0, 0.36),
@@ -573,6 +580,8 @@ main,
   border-radius: 50%;
   opacity: 0.78;
   pointer-events: none;
+  backface-visibility: hidden;
+  contain: layout style;
   transform: translate(-50%, -50%) rotate(var(--moon-plane, 0deg)) scaleY(var(--moon-incline, 0.62));
   transform-origin: 50% 50%;
 }
@@ -581,9 +590,11 @@ main,
   position: absolute;
   inset: 0;
   border-radius: 50%;
+  backface-visibility: hidden;
   transform-origin: 50% 50%;
   animation: moon-orbit var(--moon-duration, 30s) linear infinite;
   animation-direction: var(--moon-direction, normal);
+  will-change: transform;
 }
 
 .moon-body {
@@ -920,6 +931,7 @@ main,
   padding: 22px;
   background: rgba(5, 8, 14, 0.9);
   box-shadow: var(--shadow);
+  contain: layout style;
   opacity: 0;
   pointer-events: none;
   transform: translate3d(0, 18px, 0) scale(0.96);
