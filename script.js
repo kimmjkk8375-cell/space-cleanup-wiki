@@ -349,6 +349,8 @@ let objectDragOffsetY = 0;
 const objectPositions = new Map();
 const objectOverrides = new Map();
 const objectStyleCache = new Map();
+const moonRenderItems = [];
+const moonStyleCache = new Map();
 const objectNodes = [];
 const objectNodeMap = new Map();
 
@@ -401,21 +403,25 @@ function createObjects() {
         moonOrbit.style.setProperty("--moon-size", `${moon.size}px`);
         moonOrbit.style.setProperty("--moon-plane", `${moon.plane || 0}deg`);
         moonOrbit.style.setProperty("--moon-incline", String(inclination));
-        moonOrbit.style.setProperty("--moon-counter-scale", String(1 / inclination));
         moonOrbit.style.setProperty("--moon-color", moon.color);
         moonOrbit.setAttribute("aria-hidden", "true");
 
-        const moonTrack = document.createElement("span");
-        moonTrack.className = "moon-track";
-        moonTrack.style.setProperty("--moon-duration", `${moon.duration}s`);
-        moonTrack.style.setProperty("--moon-angle", `${moon.angle}deg`);
-        moonTrack.style.setProperty("--moon-direction", moon.direction < 0 ? "reverse" : "normal");
+        const moonPath = document.createElement("span");
+        moonPath.className = "moon-path";
 
         const moonBody = document.createElement("span");
         moonBody.className = "moon-body";
-        moonTrack.appendChild(moonBody);
-        moonOrbit.appendChild(moonTrack);
+        moonOrbit.append(moonPath, moonBody);
         button.appendChild(moonOrbit);
+
+        moonRenderItems.push({
+          id: `${item.id}:${moonRenderItems.length}`,
+          node: moonBody,
+          orbit: moon.orbit,
+          inclination,
+          phase: (moon.angle * Math.PI) / 180,
+          speed: ((moon.direction < 0 ? -1 : 1) * Math.PI * 2) / (moon.duration * 1000),
+        });
       });
     }
 
@@ -555,6 +561,41 @@ function applyObjectStyle(node, id, x, y, scale, opacity, zIndex) {
     transform,
     opacity: opacityValue,
     zIndex: zIndexValue,
+  });
+}
+
+function applyMoonStyle(moon, x, y, depth) {
+  const transform = `translate(-50%, -50%) translate3d(${roundTo(x, 10)}px, ${roundTo(y, 10)}px, 0)`;
+  const opacity = String(roundTo(0.72 + depth * 0.22, 1000));
+  const zIndex = String(depth >= 0 ? 9 : 1);
+  const previous = moonStyleCache.get(moon.id);
+
+  if (!previous || previous.transform !== transform) {
+    moon.node.style.transform = transform;
+  }
+
+  if (!previous || previous.opacity !== opacity) {
+    moon.node.style.opacity = opacity;
+  }
+
+  if (!previous || previous.zIndex !== zIndex) {
+    moon.node.style.zIndex = zIndex;
+  }
+
+  moonStyleCache.set(moon.id, {
+    transform,
+    opacity,
+    zIndex,
+  });
+}
+
+function renderMoons() {
+  moonRenderItems.forEach((moon) => {
+    const angle = moon.phase + orbitTime * moon.speed;
+    const x = Math.cos(angle) * moon.orbit;
+    const y = Math.sin(angle) * moon.orbit * moon.inclination;
+    const depth = (Math.sin(angle) + 1) / 2;
+    applyMoonStyle(moon, x, y, depth);
   });
 }
 
@@ -887,6 +928,7 @@ function renderObjects(time = 0) {
     });
   });
 
+  renderMoons();
   scheduleRender();
 }
 
@@ -1032,6 +1074,27 @@ function handlePointerUp(event) {
   pointerStartObjectId = null;
 }
 
+function setPagePaused(shouldPause) {
+  document.documentElement.classList.toggle("is-page-hidden", shouldPause);
+
+  if (shouldPause) {
+    if (animationFrameId !== null) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    }
+
+    lastTime = 0;
+    lastRenderAt = 0;
+    return;
+  }
+
+  lastTime = 0;
+  lastRenderAt = 0;
+  lastFixedLayoutKey = "";
+  drawStarfield();
+  scheduleRender();
+}
+
 function bindEvents() {
   stage.addEventListener("pointerdown", handlePointerDown);
   stage.addEventListener("pointermove", handlePointerMove);
@@ -1083,27 +1146,25 @@ function bindEvents() {
     });
   });
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      if (animationFrameId !== null) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
-      }
+  document.addEventListener("visibilitychange", () => setPagePaused(document.hidden));
 
-      lastTime = 0;
-      lastRenderAt = 0;
-      return;
-    }
+  window.addEventListener("blur", () => setPagePaused(true));
 
-    lastTime = 0;
-    lastRenderAt = 0;
-    lastFixedLayoutKey = "";
-    drawStarfield();
-    scheduleRender();
+  window.addEventListener("focus", () => setPagePaused(document.hidden));
+
+  window.addEventListener("pagehide", () => {
+    setPagePaused(true);
+  });
+
+  window.addEventListener("pageshow", () => {
+    setPagePaused(document.hidden);
   });
 }
 
 createObjects();
 bindEvents();
-renderObjects(0);
-drawStarfield(0);
+document.documentElement.classList.toggle("is-page-hidden", document.hidden);
+if (!document.hidden) {
+  renderObjects(0);
+  drawStarfield(0);
+}
